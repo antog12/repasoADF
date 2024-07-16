@@ -1,0 +1,9 @@
+{
+	"name": "Cliente_copy_Clientes_Excel_ADLS",
+	"properties": {
+		"folder": {
+			"name": "Move and Transform Activity"
+		},
+		"annotations": []
+	}
+}
