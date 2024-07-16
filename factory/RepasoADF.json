@@ -1,0 +1,9 @@
+{
+	"name": "RepasoADF",
+	"location": "westeurope",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "9894517b-dc43-4b2e-8864-8454f31de8e6",
+		"tenantId": "9e177e8d-e276-4922-ace9-f66627fbaee0"
+	}
+}
