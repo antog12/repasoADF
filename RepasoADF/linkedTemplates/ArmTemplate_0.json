@@ -1,0 +1,276 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Nombre de instancia de Data Factory",
+			"defaultValue": "RepasoADF"
+		},
+		"Linked_Service_ADLS_Origen_accountKey": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"accountKey\"de \"Linked_Service_ADLS_Origen\""
+		},
+		"Linked_Service_DB_Origen_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"Linked_Service_DB_Origen\""
+		},
+		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
+		},
+		"Linked_Service_DB_Origen_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"Linked_Service_DB_Origen_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DB-repaso-ADF"
+		},
+		"Linked_Service_DB_Origen_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Linked_Service_ADLS_Origen')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Linked Service de conexión al almacen adls",
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('Linked_Service_ADLS_Origen_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('Linked_Service_ADLS_Origen_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Linked_Service_DB_Origen')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión linked service a DB-repaso-ADF",
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_server')]",
+					"database": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('Linked_Service_DB_Origen_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/adls_Cliente_origen')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Linked_Service_ADLS_Origen",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Move and transform activities"
+				},
+				"annotations": [],
+				"type": "Excel",
+				"typeProperties": {
+					"sheetName": "Cliente Nuevos",
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Cliente.xlsx",
+						"folderPath": "Move and transform activities",
+						"fileSystem": "dataset"
+					},
+					"firstRowAsHeader": true
+				},
+				"schema": [
+					{
+						"name": "Nombre Empresa",
+						"type": "String"
+					},
+					{
+						"name": "Nombre Cliente",
+						"type": "String"
+					},
+					{
+						"name": "Tipo Cliente",
+						"type": "String"
+					},
+					{
+						"name": "Linea",
+						"type": "String"
+					},
+					{
+						"name": "Nro Celular",
+						"type": "String"
+					},
+					{
+						"name": "Monto",
+						"type": "String"
+					},
+					{
+						"name": "Fecha Contratacion",
+						"type": "String"
+					},
+					{
+						"name": "Tipo Servicio",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_ADLS_Origen')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/asql_DB_repaso_adf')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión hacia sql",
+				"linkedServiceName": {
+					"referenceName": "Linked_Service_DB_Origen",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Move and transform activities"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "nombreEmpresa",
+						"type": "varchar"
+					},
+					{
+						"name": "nombreCliente",
+						"type": "varchar"
+					},
+					{
+						"name": "tipoCliente",
+						"type": "varchar"
+					},
+					{
+						"name": "Linea",
+						"type": "varchar"
+					},
+					{
+						"name": "NroCelular",
+						"type": "varchar"
+					},
+					{
+						"name": "Monto",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "fechaContratacion",
+						"type": "date"
+					},
+					{
+						"name": "tipoServicio",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Cliente"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_DB_Origen')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ClienteExcel_a_clienteSql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "cargar archivo cliente desde esxcel hacia sql",
+				"activities": [
+					{
+						"name": "Copy cliente hacia sql",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ExcelSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "adls_Cliente_origen",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "asql_DB_repaso_adf",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Move and Transform Activity"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/adls_Cliente_origen')]",
+				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]"
+			]
+		}
+	]
+}

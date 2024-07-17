@@ -1,0 +1,27 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "RepasoADF"
+		},
+		"Linked_Service_ADLS_Origen_accountKey": {
+			"value": ""
+		},
+		"Linked_Service_DB_Origen_password": {
+			"value": ""
+		},
+		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
+			"value": "https://almacenadls.dfs.core.windows.net/"
+		},
+		"Linked_Service_DB_Origen_properties_typeProperties_server": {
+			"value": "antog12server.database.windows.net"
+		},
+		"Linked_Service_DB_Origen_properties_typeProperties_database": {
+			"value": "DB-repaso-ADF"
+		},
+		"Linked_Service_DB_Origen_properties_typeProperties_userName": {
+			"value": "antog12"
+		}
+	}
+}
