@@ -37,45 +37,176 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/Linked_Service_ADLS_Origen')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/ClienteExcel_a_clienteSql')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "Linked Service de conexión al almacen adls",
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('Linked_Service_ADLS_Origen_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "SecureString",
-						"value": "[parameters('Linked_Service_ADLS_Origen_accountKey')]"
+				"description": "cargar archivo cliente desde esxcel hacia sql",
+				"activities": [
+					{
+						"name": "Copy cliente hacia sql",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "ExcelSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								}
+							},
+							"sink": {
+								"type": "AzureSqlSink",
+								"writeBehavior": "insert",
+								"sqlWriterUseTableLock": false
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "Nombre Empresa",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "nombreEmpresa",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Nombre Cliente",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "nombreCliente",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Tipo Cliente",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "tipoCliente",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Linea",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Linea",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Nro Celular",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "NroCelular",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									},
+									{
+										"source": {
+											"name": "Monto",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "Monto",
+											"type": "Decimal",
+											"physicalType": "money",
+											"scale": 4,
+											"precision": 19
+										}
+									},
+									{
+										"source": {
+											"name": "Fecha Contratacion",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "fechaContratacion",
+											"type": "DateTime",
+											"physicalType": "date"
+										}
+									},
+									{
+										"source": {
+											"name": "Tipo Servicio",
+											"type": "String",
+											"physicalType": "String"
+										},
+										"sink": {
+											"name": "tipoServicio",
+											"type": "String",
+											"physicalType": "varchar"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "adls_Cliente_origen",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "asql_DB_repaso_adf",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
 					}
-				}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Move and Transform Activity"
+				},
+				"annotations": []
 			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Linked_Service_DB_Origen')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Conexión linked service a DB-repaso-ADF",
-				"annotations": [],
-				"type": "AzureSqlDatabase",
-				"typeProperties": {
-					"server": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_server')]",
-					"database": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('Linked_Service_DB_Origen_password')]"
-					}
-				}
-			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/adls_Cliente_origen')]",
+				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/adls_Cliente_origen')]",
@@ -201,76 +332,45 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ClienteExcel_a_clienteSql')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/Linked_Service_ADLS_Origen')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "cargar archivo cliente desde esxcel hacia sql",
-				"activities": [
-					{
-						"name": "Copy cliente hacia sql",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "ExcelSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								}
-							},
-							"sink": {
-								"type": "AzureSqlSink",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "adls_Cliente_origen",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "asql_DB_repaso_adf",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
+				"description": "Linked Service de conexión al almacen adls",
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('Linked_Service_ADLS_Origen_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('Linked_Service_ADLS_Origen_accountKey')]"
 					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "Move and Transform Activity"
-				},
-				"annotations": []
+				}
 			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/adls_Cliente_origen')]",
-				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]"
-			]
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Linked_Service_DB_Origen')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión linked service a DB-repaso-ADF",
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_server')]",
+					"database": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('Linked_Service_DB_Origen_password')]"
+					}
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }
