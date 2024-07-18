@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"password\"de \"Linked_Service_DB_Origen\""
 		},
+		"linkedService_asql_aw_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"linkedService_asql_aw\""
+		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
@@ -28,6 +32,18 @@
 			"defaultValue": "DB-repaso-ADF"
 		},
 		"Linked_Service_DB_Origen_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
+		"linkedService_asql_aw_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"linkedService_asql_aw_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "@{linkedService().DataBaseName}"
+		},
+		"linkedService_asql_aw_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		},
@@ -64,6 +80,9 @@
 					"Linked_Service_DB_Origen_password": {
 						"value": "[parameters('Linked_Service_DB_Origen_password')]"
 					},
+					"linkedService_asql_aw_password": {
+						"value": "[parameters('linkedService_asql_aw_password')]"
+					},
 					"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 						"value": "[parameters('Linked_Service_ADLS_Origen_properties_typeProperties_url')]"
 					},
@@ -75,6 +94,15 @@
 					},
 					"Linked_Service_DB_Origen_properties_typeProperties_userName": {
 						"value": "[parameters('Linked_Service_DB_Origen_properties_typeProperties_userName')]"
+					},
+					"linkedService_asql_aw_properties_typeProperties_server": {
+						"value": "[parameters('linkedService_asql_aw_properties_typeProperties_server')]"
+					},
+					"linkedService_asql_aw_properties_typeProperties_database": {
+						"value": "[parameters('linkedService_asql_aw_properties_typeProperties_database')]"
+					},
+					"linkedService_asql_aw_properties_typeProperties_userName": {
+						"value": "[parameters('linkedService_asql_aw_properties_typeProperties_userName')]"
 					}
 				}
 			},

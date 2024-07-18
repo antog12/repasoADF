@@ -11,6 +11,9 @@
 		"Linked_Service_DB_Origen_password": {
 			"value": ""
 		},
+		"linkedService_asql_aw_password": {
+			"value": ""
+		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"value": "https://almacenadls.dfs.core.windows.net/"
 		},
@@ -21,6 +24,15 @@
 			"value": "DB-repaso-ADF"
 		},
 		"Linked_Service_DB_Origen_properties_typeProperties_userName": {
+			"value": "antog12"
+		},
+		"linkedService_asql_aw_properties_typeProperties_server": {
+			"value": "antog12server.database.windows.net"
+		},
+		"linkedService_asql_aw_properties_typeProperties_database": {
+			"value": "@{linkedService().DataBaseName}"
+		},
+		"linkedService_asql_aw_properties_typeProperties_userName": {
 			"value": "antog12"
 		}
 	}

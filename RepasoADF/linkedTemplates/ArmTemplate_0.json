@@ -15,6 +15,10 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"password\"de \"Linked_Service_DB_Origen\""
 		},
+		"linkedService_asql_aw_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"linkedService_asql_aw\""
+		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
@@ -28,6 +32,18 @@
 			"defaultValue": "DB-repaso-ADF"
 		},
 		"Linked_Service_DB_Origen_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
+		"linkedService_asql_aw_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"linkedService_asql_aw_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "@{linkedService().DataBaseName}"
+		},
+		"linkedService_asql_aw_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		}
@@ -72,6 +88,34 @@
 					"password": {
 						"type": "SecureString",
 						"value": "[parameters('Linked_Service_DB_Origen_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/linkedService_asql_aw')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "linked service para conectar a la db aw",
+				"parameters": {
+					"DataBaseName": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('linkedService_asql_aw_properties_typeProperties_server')]",
+					"database": "[parameters('linkedService_asql_aw_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('linkedService_asql_aw_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('linkedService_asql_aw_password')]"
 					}
 				}
 			},
@@ -198,6 +242,133 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_DB_Origen')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ASQL_AWDW_Table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "linkedService_asql_aw",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"DataBaseName": {
+							"value": "@dataset().DataBaseName",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"DataBaseName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Move and transform activities"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "CustomerID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "NameStyle",
+						"type": "bit"
+					},
+					{
+						"name": "Title",
+						"type": "nvarchar"
+					},
+					{
+						"name": "FirstName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "MiddleName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "LastName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Suffix",
+						"type": "nvarchar"
+					},
+					{
+						"name": "CompanyName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "SalesPerson",
+						"type": "nvarchar"
+					},
+					{
+						"name": "EmailAddress",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Phone",
+						"type": "nvarchar"
+					},
+					{
+						"name": "PasswordHash",
+						"type": "varchar"
+					},
+					{
+						"name": "PasswordSalt",
+						"type": "varchar"
+					},
+					{
+						"name": "rowguid",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": "Customer"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/linkedService_asql_aw')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ADLS_almacenadls_table')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Linked_Service_ADLS_Origen",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "Move and transform activities",
+						"fileSystem": "dataset"
+					},
+					"columnDelimiter": "|",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_ADLS_Origen')]"
 			]
 		},
 		{
@@ -370,6 +541,91 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/adls_Cliente_origen')]",
 				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Table_copy_sql_to_adls')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "vamos a copiar las tablas de AW hacia adls mediante parámetros",
+				"activities": [
+					{
+						"name": "Copy_table_sql_to_adls",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ASQL_AWDW_Table",
+								"type": "DatasetReference",
+								"parameters": {
+									"DataBaseName": {
+										"value": "@pipeline().parameters.DatabaseName",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ADLS_almacenadls_table",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"DatabaseName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Move and Transform Activity"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ASQL_AWDW_Table')]",
+				"[concat(variables('factoryId'), '/datasets/ADLS_almacenadls_table')]"
 			]
 		}
 	]
