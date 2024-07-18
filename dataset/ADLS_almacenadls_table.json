@@ -5,11 +5,20 @@
 			"referenceName": "Linked_Service_ADLS_Origen",
 			"type": "LinkedServiceReference"
 		},
+		"parameters": {
+			"TableName": {
+				"type": "String"
+			}
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {
 			"location": {
 				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().TableName",
+					"type": "Expression"
+				},
 				"folderPath": "Move and transform activities",
 				"fileSystem": "dataset"
 			},
