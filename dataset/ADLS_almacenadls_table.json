@@ -1,0 +1,23 @@
+{
+	"name": "ADLS_almacenadls_table",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "Linked_Service_ADLS_Origen",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Move and transform activities",
+				"fileSystem": "dataset"
+			},
+			"columnDelimiter": "|",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
