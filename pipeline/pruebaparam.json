@@ -49,6 +49,10 @@
 							"databaseNombre": {
 								"value": "@pipeline().parameters.DataBaseNombre",
 								"type": "Expression"
+							},
+							"TableNombre": {
+								"value": "@pipeline().parameters.TableNombre",
+								"type": "Expression"
 							}
 						}
 					}
