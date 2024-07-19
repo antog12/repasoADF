@@ -453,7 +453,7 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileName": {
-							"value": "@concat(\r\n    dataset().TableName,'.csv'\r\n    )",
+							"value": "@{\ntoUpper(\n    dataset().TableName\n    )\n}.csv",
 							"type": "Expression"
 						},
 						"folderPath": "Move and transform activities",
