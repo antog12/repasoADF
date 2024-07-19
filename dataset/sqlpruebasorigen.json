@@ -19,6 +19,9 @@
 				"type": "string"
 			}
 		},
+		"folder": {
+			"name": "Move and transform activities"
+		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
