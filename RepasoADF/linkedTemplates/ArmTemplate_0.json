@@ -187,7 +187,7 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"fileName": {
-							"value": "@{\ntoUpper(\n    dataset().TableName\n    )\n}.csv",
+							"value": "@{\ntoUpper(\n    dataset().TableName\n    )\n}",
 							"type": "Expression"
 						},
 						"folderPath": "Move and transform activities",
@@ -781,7 +781,14 @@
 					{
 						"name": "Copy_table_sql_to_adls",
 						"type": "Copy",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Set variable File Name",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"policy": {
 							"timeout": "0.12:00:00",
 							"retry": 0,
@@ -839,12 +846,29 @@
 								"type": "DatasetReference",
 								"parameters": {
 									"TableName": {
-										"value": "@pipeline().parameters.TableName",
+										"value": "@variables('FileName')",
 										"type": "Expression"
 									}
 								}
 							}
 						]
+					},
+					{
+						"name": "Set variable File Name",
+						"type": "SetVariable",
+						"dependsOn": [],
+						"policy": {
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"variableName": "FileName",
+							"value": {
+								"value": "@{\n    pipeline().parameters.TableName\n}_@{\n    utcnow()\n}.csv",
+								"type": "Expression"
+							}
+						}
 					}
 				],
 				"policy": {
@@ -858,7 +882,11 @@
 						"type": "String"
 					}
 				},
-				"variables": {},
+				"variables": {
+					"FileName": {
+						"type": "String"
+					}
+				},
 				"folder": {
 					"name": "Move and Transform Activity"
 				},
