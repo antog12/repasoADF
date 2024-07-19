@@ -7,6 +7,10 @@
 			"metadata": "Nombre de instancia de Data Factory",
 			"defaultValue": "RepasoADF"
 		},
+		"ASQLprueba_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"ASQLprueba\""
+		},
 		"Linked_Service_ADLS_Origen_accountKey": {
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"accountKey\"de \"Linked_Service_ADLS_Origen\""
@@ -18,6 +22,18 @@
 		"linkedService_asql_aw_password": {
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"password\"de \"linkedService_asql_aw\""
+		},
+		"ASQLprueba_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"ASQLprueba_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "@{linkedService().dataBaseNombre}"
+		},
+		"ASQLprueba_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
 		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"type": "string",
@@ -322,6 +338,102 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pruebaparam')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "copy pruebas param",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "sqlpruebasorigen",
+								"type": "DatasetReference",
+								"parameters": {
+									"databaseNombre": {
+										"value": "@pipeline().parameters.DataBaseNombre",
+										"type": "Expression"
+									},
+									"TableNombre": {
+										"value": "@pipeline().parameters.TableNombre",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DestinoPruebaParams",
+								"type": "DatasetReference",
+								"parameters": {
+									"TableNombre": {
+										"value": "@pipeline().parameters.TableNombre",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"DataBaseNombre": {
+						"type": "string"
+					},
+					"TableNombre": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Move and Transform Activity"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/sqlpruebasorigen')]",
+				"[concat(variables('factoryId'), '/datasets/DestinoPruebaParams')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ADLS_almacenadls_table')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -464,6 +576,43 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DestinoPruebaParams')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Linked_Service_ADLS_Origen",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableNombre": {
+						"type": "String"
+					}
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().TableNombre",
+							"type": "Expression"
+						},
+						"folderPath": "Move and transform activities",
+						"fileSystem": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_ADLS_Origen')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/adls_Cliente_origen')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -585,6 +734,157 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_DB_Origen')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sqlpruebasorigen')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "ASQLprueba",
+					"type": "LinkedServiceReference",
+					"parameters": {
+						"dataBaseNombre": {
+							"value": "@dataset().databaseNombre",
+							"type": "Expression"
+						}
+					}
+				},
+				"parameters": {
+					"databaseNombre": {
+						"type": "string"
+					},
+					"TableNombre": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "ProductNumber",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Color",
+						"type": "nvarchar"
+					},
+					{
+						"name": "StandardCost",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "ListPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "Size",
+						"type": "nvarchar"
+					},
+					{
+						"name": "Weight",
+						"type": "decimal",
+						"precision": 8,
+						"scale": 2
+					},
+					{
+						"name": "ProductCategoryID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "ProductModelID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SellStartDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "SellEndDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "DiscontinuedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					},
+					{
+						"name": "ThumbNailPhoto",
+						"type": "varbinary"
+					},
+					{
+						"name": "ThumbnailPhotoFileName",
+						"type": "nvarchar"
+					},
+					{
+						"name": "rowguid",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": {
+						"value": "@dataset().TableNombre",
+						"type": "Expression"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ASQLprueba')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ASQLprueba')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"parameters": {
+					"dataBaseNombre": {
+						"type": "string"
+					}
+				},
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ASQLprueba_properties_typeProperties_server')]",
+					"database": "[parameters('ASQLprueba_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ASQLprueba_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ASQLprueba_password')]"
+					}
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Linked_Service_ADLS_Origen')]",
