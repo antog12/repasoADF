@@ -70,9 +70,6 @@
 		"parameters": {
 			"DataBaseNombre": {
 				"type": "string"
-			},
-			"TableNombre": {
-				"type": "string"
 			}
 		},
 		"folder": {
