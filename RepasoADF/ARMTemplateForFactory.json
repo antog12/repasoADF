@@ -327,6 +327,7 @@
 						"type": "String"
 					}
 				},
+				"variables": {},
 				"folder": {
 					"name": "Move and Transform Activity"
 				},
@@ -446,6 +447,9 @@
 					"TableName": {
 						"type": "String"
 					}
+				},
+				"folder": {
+					"name": "Move and transform activities"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -588,6 +592,9 @@
 					"TableNombre": {
 						"type": "String"
 					}
+				},
+				"folder": {
+					"name": "Move and transform activities"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -757,6 +764,9 @@
 					"TableNombre": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "Move and transform activities"
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
