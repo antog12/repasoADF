@@ -90,7 +90,7 @@
 				"typeProperties": {
 					"variableName": "FileName",
 					"value": {
-						"value": "@{\n    pipeline().parameters.TableName\n}_@{\n    utcnow()\n}.csv",
+						"value": "@{\n    pipeline().parameters.TableName\n}_@{\n    formatDateTime(utcnow(),'yyyyMMdd')\n}.csv",
 						"type": "Expression"
 					}
 				}
