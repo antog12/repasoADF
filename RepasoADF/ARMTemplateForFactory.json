@@ -359,7 +359,9 @@
 				"folder": {
 					"name": "Move and Transform Activity"
 				},
-				"annotations": []
+				"annotations": [
+					"Exportar tabla a CSV"
+				]
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ASQL_AWDW_Table')]",
