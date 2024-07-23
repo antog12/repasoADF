@@ -21,7 +21,16 @@
 					"secureOutput": false,
 					"secureInput": false
 				},
-				"userProperties": [],
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "SalesLT.@{pipeline().parameters.TableName}"
+					},
+					{
+						"name": "Destination",
+						"value": "dataset/Move and transform activities/@{\ntoUpper(\n    variables('FileName')\n    )\n}"
+					}
+				],
 				"typeProperties": {
 					"source": {
 						"type": "AzureSqlSource",
