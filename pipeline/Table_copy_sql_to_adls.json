@@ -112,6 +112,8 @@
 		"folder": {
 			"name": "Move and Transform Activity"
 		},
-		"annotations": []
+		"annotations": [
+			"Exportar tabla a CSV"
+		]
 	}
 }
