@@ -5,13 +5,8 @@
 		"annotations": [],
 		"type": "AzureSqlDatabase",
 		"typeProperties": {
-			"server": "antog12server.database.windows.net",
-			"database": "AdventureWorks",
-			"encrypt": "mandatory",
-			"trustServerCertificate": false,
-			"authenticationType": "SQL",
-			"userName": "antog12",
-			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDIwRTM3NjBBLTJEOUUtNDQwMC05RTNBLTM3NDlCQUFEMjU4Nl9jMTFkNDg3Ny1jM2UyLTQxOWItYWMwYS0wZjI3ZmQwMWQzMDIiDQp9"
+			"connectionString": "integrated security=False;encrypt=True;connection timeout=30;data source=antog12server.database.windows.net;initial catalog=AdventureWorks;user id=antog12",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDIwRTM3NjBBLTJEOUUtNDQwMC05RTNBLTM3NDlCQUFEMjU4Nl85ZDhlYzA1NS0xYWI1LTQ3ODYtOTMxYy1hOTkwYzU3NGRkNjIiDQp9"
 		}
 	}
 }
