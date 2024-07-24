@@ -1,0 +1,19 @@
+{
+	"name": "AzureSqlTable1",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedService_AWDW2",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "DataFlow"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "SalesLT",
+			"table": "Customer"
+		}
+	}
+}
