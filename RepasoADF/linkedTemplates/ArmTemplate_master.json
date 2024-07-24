@@ -19,9 +19,9 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"LinkedService_BlobStorage\""
 		},
-		"LinkedSevice_ASQL_AWDW2_password": {
+		"LinkedSevice_ASQL_AWDW2_connectionString": {
 			"type": "secureString",
-			"metadata": "Cadena protegida para \"password\"de \"LinkedSevice_ASQL_AWDW2\""
+			"metadata": "Cadena protegida para \"connectionString\"de \"LinkedSevice_ASQL_AWDW2\""
 		},
 		"Linked_Service_ADLS_Origen_accountKey": {
 			"type": "secureString",
@@ -44,18 +44,6 @@
 			"defaultValue": "@{linkedService().dataBaseNombre}"
 		},
 		"ASQLprueba_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "antog12"
-		},
-		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "antog12server.database.windows.net"
-		},
-		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "AdventureWorks"
-		},
-		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		},
@@ -123,8 +111,8 @@
 					"LinkedService_BlobStorage_connectionString": {
 						"value": "[parameters('LinkedService_BlobStorage_connectionString')]"
 					},
-					"LinkedSevice_ASQL_AWDW2_password": {
-						"value": "[parameters('LinkedSevice_ASQL_AWDW2_password')]"
+					"LinkedSevice_ASQL_AWDW2_connectionString": {
+						"value": "[parameters('LinkedSevice_ASQL_AWDW2_connectionString')]"
 					},
 					"Linked_Service_ADLS_Origen_accountKey": {
 						"value": "[parameters('Linked_Service_ADLS_Origen_accountKey')]"
@@ -143,15 +131,6 @@
 					},
 					"ASQLprueba_properties_typeProperties_userName": {
 						"value": "[parameters('ASQLprueba_properties_typeProperties_userName')]"
-					},
-					"LinkedSevice_ASQL_AWDW2_properties_typeProperties_server": {
-						"value": "[parameters('LinkedSevice_ASQL_AWDW2_properties_typeProperties_server')]"
-					},
-					"LinkedSevice_ASQL_AWDW2_properties_typeProperties_database": {
-						"value": "[parameters('LinkedSevice_ASQL_AWDW2_properties_typeProperties_database')]"
-					},
-					"LinkedSevice_ASQL_AWDW2_properties_typeProperties_userName": {
-						"value": "[parameters('LinkedSevice_ASQL_AWDW2_properties_typeProperties_userName')]"
 					},
 					"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 						"value": "[parameters('Linked_Service_ADLS_Origen_properties_typeProperties_url')]"
@@ -177,6 +156,26 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "RepasoADF_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'RepasoADF_ArmTemplate_0')]"
+			]
 		}
 	]
 }

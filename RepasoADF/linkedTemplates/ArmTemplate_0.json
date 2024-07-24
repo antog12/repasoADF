@@ -19,9 +19,9 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"LinkedService_BlobStorage\""
 		},
-		"LinkedSevice_ASQL_AWDW2_password": {
+		"LinkedSevice_ASQL_AWDW2_connectionString": {
 			"type": "secureString",
-			"metadata": "Cadena protegida para \"password\"de \"LinkedSevice_ASQL_AWDW2\""
+			"metadata": "Cadena protegida para \"connectionString\"de \"LinkedSevice_ASQL_AWDW2\""
 		},
 		"Linked_Service_ADLS_Origen_accountKey": {
 			"type": "secureString",
@@ -44,18 +44,6 @@
 			"defaultValue": "@{linkedService().dataBaseNombre}"
 		},
 		"ASQLprueba_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "antog12"
-		},
-		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "antog12server.database.windows.net"
-		},
-		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "AdventureWorks"
-		},
-		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		},
@@ -153,16 +141,7 @@
 				"annotations": [],
 				"type": "AzureSqlDatabase",
 				"typeProperties": {
-					"server": "[parameters('LinkedSevice_ASQL_AWDW2_properties_typeProperties_server')]",
-					"database": "[parameters('LinkedSevice_ASQL_AWDW2_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('LinkedSevice_ASQL_AWDW2_properties_typeProperties_userName')]",
-					"password": {
-						"type": "SecureString",
-						"value": "[parameters('LinkedSevice_ASQL_AWDW2_password')]"
-					}
+					"connectionString": "[parameters('LinkedSevice_ASQL_AWDW2_connectionString')]"
 				}
 			},
 			"dependsOn": []
@@ -727,6 +706,98 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/New Branch')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedSevice_ASQL_AWDW2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceProduct"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkProductcsv"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkProductJson"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          ProductID as integer,",
+						"          Name as string,",
+						"          ProductNumber as string,",
+						"          Color as string,",
+						"          StandardCost as decimal(19,4),",
+						"          ListPrice as decimal(19,4),",
+						"          Size as string,",
+						"          Weight as decimal(8,2),",
+						"          ProductCategoryID as integer,",
+						"          ProductModelID as integer,",
+						"          SellStartDate as timestamp,",
+						"          SellEndDate as timestamp,",
+						"          DiscontinuedDate as timestamp,",
+						"          ThumbNailPhoto as binary,",
+						"          ThumbnailPhotoFileName as string,",
+						"          rowguid as string,",
+						"          ModifiedDate as timestamp",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'select * from saleslt.product',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceProduct",
+						"sourceProduct sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'New Branch',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['Product.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProductcsv",
+						"sourceProduct sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'json',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'New Branch',",
+						"     partitionFileNames:['ProductJSON'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProductJson"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedSevice_ASQL_AWDW2')]",
+				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ClienteExcel_a_clienteSql')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -896,6 +967,56 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/adls_Cliente_origen')]",
 				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/New Branch')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow Product",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "New Branch",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceProduct": {},
+									"sinkProductcsv": {},
+									"sinkProductJson": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "DataFlow"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/New Branch')]"
 			]
 		},
 		{
@@ -1129,120 +1250,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/sqlpruebasorigen')]",
 				"[concat(variables('factoryId'), '/datasets/DestinoPruebaParams')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Primer data flow')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"dataset": {
-								"referenceName": "AzureSqlTable1",
-								"type": "DatasetReference"
-							},
-							"name": "sourceCustomer"
-						}
-					],
-					"sinks": [
-						{
-							"dataset": {
-								"referenceName": "ABS_Customer",
-								"type": "DatasetReference"
-							},
-							"name": "sinkcustomer"
-						}
-					],
-					"transformations": [],
-					"scriptLines": [
-						"source(output(",
-						"          CustomerID as integer,",
-						"          NameStyle as boolean,",
-						"          Title as string,",
-						"          FirstName as string,",
-						"          MiddleName as string,",
-						"          LastName as string,",
-						"          Suffix as string,",
-						"          CompanyName as string,",
-						"          SalesPerson as string,",
-						"          EmailAddress as string,",
-						"          Phone as string,",
-						"          PasswordHash as string,",
-						"          PasswordSalt as string,",
-						"          rowguid as string,",
-						"          ModifiedDate as timestamp",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     isolationLevel: 'READ_UNCOMMITTED',",
-						"     format: 'table') ~> sourceCustomer",
-						"sourceCustomer sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     partitionFileNames:['Customer.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkcustomer"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]",
-				"[concat(variables('factoryId'), '/datasets/ABS_Customer')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Primer Data Flow')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Primer Data Flow",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Primer data flow",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceCustomer": {},
-									"sinkcustomer": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/Primer data flow')]"
 			]
 		}
 	]
