@@ -8,6 +8,15 @@
 		"ASQLprueba_password": {
 			"value": ""
 		},
+		"LinkedService_AWDW2_connectionString": {
+			"value": ""
+		},
+		"LinkedService_BlobStorage_connectionString": {
+			"value": ""
+		},
+		"LinkedSevice_ASQL_AWDW2_password": {
+			"value": ""
+		},
 		"Linked_Service_ADLS_Origen_accountKey": {
 			"value": ""
 		},
@@ -24,6 +33,15 @@
 			"value": "@{linkedService().dataBaseNombre}"
 		},
 		"ASQLprueba_properties_typeProperties_userName": {
+			"value": "antog12"
+		},
+		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_server": {
+			"value": "antog12server.database.windows.net"
+		},
+		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_database": {
+			"value": "AdventureWorks"
+		},
+		"LinkedSevice_ASQL_AWDW2_properties_typeProperties_userName": {
 			"value": "antog12"
 		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
