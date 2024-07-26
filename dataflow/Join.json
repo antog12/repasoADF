@@ -29,11 +29,41 @@
 						"type": "LinkedServiceReference"
 					},
 					"name": "sinkProductInnerjoin"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LinkedService_BlobStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkProductLeftJoin"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LinkedService_BlobStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkProductRightJoin"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LinkedService_BlobStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkFullJoin"
 				}
 			],
 			"transformations": [
 				{
 					"name": "InnerJoin"
+				},
+				{
+					"name": "LeftOuterJoin"
+				},
+				{
+					"name": "RightOuterJoin"
+				},
+				{
+					"name": "FullJoin"
 				}
 			],
 			"scriptLines": [
@@ -72,6 +102,21 @@
 				"     matchType:'exact',",
 				"     ignoreSpaces: false,",
 				"     broadcast: 'auto')~> InnerJoin",
+				"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
+				"     joinType:'left',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> LeftOuterJoin",
+				"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
+				"     joinType:'right',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> RightOuterJoin",
+				"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
+				"     joinType:'outer',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> FullJoin",
 				"InnerJoin sink(allowSchemaDrift: true,",
 				"     validateSchema: false,",
 				"     format: 'delimited',",
@@ -84,7 +129,46 @@
 				"     partitionFileNames:['ProductInnerJoin.csv'],",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true,",
-				"     partitionBy('hash', 1)) ~> sinkProductInnerjoin"
+				"     partitionBy('hash', 1)) ~> sinkProductInnerjoin",
+				"LeftOuterJoin sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'dataflowdataset',",
+				"     folderPath: 'Join',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     partitionFileNames:['ProductLeftJoin.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkProductLeftJoin",
+				"RightOuterJoin sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'dataflowdataset',",
+				"     folderPath: 'Join',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     partitionFileNames:['ProductRightJoin.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkProductRightJoin",
+				"FullJoin sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'dataflowdataset',",
+				"     folderPath: 'Join',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     partitionFileNames:['ProductFullJoin.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkFullJoin"
 			]
 		}
 	}
