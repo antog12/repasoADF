@@ -1343,175 +1343,114 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ClienteExcel_a_clienteSql')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
+			"name": "[concat(parameters('factoryName'), '/Union')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"description": "cargar archivo cliente desde esxcel hacia sql",
-				"activities": [
-					{
-						"name": "Copy cliente hacia sql",
-						"type": "Copy",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"source": {
-								"type": "ExcelSource",
-								"storeSettings": {
-									"type": "AzureBlobFSReadSettings",
-									"recursive": true,
-									"enablePartitionDiscovery": false
-								}
-							},
-							"sink": {
-								"type": "AzureSqlSink",
-								"writeBehavior": "insert",
-								"sqlWriterUseTableLock": false
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"mappings": [
-									{
-										"source": {
-											"name": "Nombre Empresa",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "nombreEmpresa",
-											"type": "String",
-											"physicalType": "varchar"
-										}
-									},
-									{
-										"source": {
-											"name": "Nombre Cliente",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "nombreCliente",
-											"type": "String",
-											"physicalType": "varchar"
-										}
-									},
-									{
-										"source": {
-											"name": "Tipo Cliente",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "tipoCliente",
-											"type": "String",
-											"physicalType": "varchar"
-										}
-									},
-									{
-										"source": {
-											"name": "Linea",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "Linea",
-											"type": "String",
-											"physicalType": "varchar"
-										}
-									},
-									{
-										"source": {
-											"name": "Nro Celular",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "NroCelular",
-											"type": "String",
-											"physicalType": "varchar"
-										}
-									},
-									{
-										"source": {
-											"name": "Monto",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "Monto",
-											"type": "Decimal",
-											"physicalType": "money",
-											"scale": 4,
-											"precision": 19
-										}
-									},
-									{
-										"source": {
-											"name": "Fecha Contratacion",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "fechaContratacion",
-											"type": "DateTime",
-											"physicalType": "date"
-										}
-									},
-									{
-										"source": {
-											"name": "Tipo Servicio",
-											"type": "String",
-											"physicalType": "String"
-										},
-										"sink": {
-											"name": "tipoServicio",
-											"type": "String",
-											"physicalType": "varchar"
-										}
-									}
-								],
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "adls_Cliente_origen",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "asql_DB_repaso_adf",
-								"type": "DatasetReference",
-								"parameters": {}
-							}
-						]
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
 				"folder": {
-					"name": "Move and Transform Activity"
+					"name": "Data Flow"
 				},
-				"annotations": []
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourcemovie1"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceMovie2"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceMovie3"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkMOVIE"
+						}
+					],
+					"transformations": [
+						{
+							"name": "union1",
+							"description": "Por posición ya que el orden de los datos es el mismo pero no hay encabezados en movie2"
+						},
+						{
+							"name": "union2",
+							"description": "aqui como los encabezados tienen nombre se establecen por name"
+						}
+					],
+					"scriptLines": [
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     fileName: 'DataSetMovie1.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourcemovie1",
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     fileName: 'DataSetMovie2.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false) ~> sourceMovie2",
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     fileName: 'DataSetMovie3.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceMovie3",
+						"sourcemovie1, sourceMovie2 union(byName: false)~> union1",
+						"union1, sourceMovie3 union(byName: true)~> union2",
+						"union2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['movie.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkMOVIE"
+					]
+				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/datasets/adls_Cliente_origen')]",
-				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]"
+				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
 			]
 		}
 	]

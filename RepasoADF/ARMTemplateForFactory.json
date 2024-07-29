@@ -645,6 +645,57 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Union')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flowUnion",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Union",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourcemovie1": {},
+									"sourceMovie2": {},
+									"sourceMovie3": {},
+									"sinkMOVIE": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "DataFlow"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Union')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pruebaparam')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2065,6 +2116,117 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/AzureSqlTable1')]",
 				"[concat(variables('factoryId'), '/datasets/ABS_Customer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Union')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourcemovie1"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceMovie2"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceMovie3"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkMOVIE"
+						}
+					],
+					"transformations": [
+						{
+							"name": "union1",
+							"description": "Por posición ya que el orden de los datos es el mismo pero no hay encabezados en movie2"
+						},
+						{
+							"name": "union2",
+							"description": "aqui como los encabezados tienen nombre se establecen por name"
+						}
+					],
+					"scriptLines": [
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     fileName: 'DataSetMovie1.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourcemovie1",
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     fileName: 'DataSetMovie2.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false) ~> sourceMovie2",
+						"source(useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     fileName: 'DataSetMovie3.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceMovie3",
+						"sourcemovie1, sourceMovie2 union(byName: false)~> union1",
+						"union1, sourceMovie3 union(byName: true)~> union2",
+						"union2 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Union',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['movie.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkMOVIE"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
 			]
 		}
 	]
