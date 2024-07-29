@@ -132,6 +132,83 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Select')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_AWDW2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceCategoriaProducto"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkCategriaProducto"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn"
+						},
+						{
+							"name": "select"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Categoria as string,",
+						"          Producto as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          UnitPriceDiscount as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'SELECT PC.Name Categoria, P.Name Producto, OD.UnitPrice, OD.UnitPriceDiscount\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceCategoriaProducto",
+						"sourceCategoriaProducto derive(CATEGORIA = upper(Categoria),",
+						"          Producto = upper(Producto),",
+						"          {Monto Total} = toDecimal(UnitPrice-UnitPriceDiscount)) ~> derivedColumn",
+						"derivedColumn select(mapColumn(",
+						"          PRODUCTO = Producto,",
+						"          CATEGORIA = derivedColumn@CATEGORIA,",
+						"          {MONTO TOTAL} = {Monto Total}",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select",
+						"select sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Select',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['CategoriaProductoSelect.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkCategriaProducto"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Union')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -702,6 +779,55 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/New Branch')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Select')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flowSelect",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Select",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceCategoriaProducto": {},
+									"sinkCategriaProducto": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "DataFlow"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Select')]"
 			]
 		},
 		{
