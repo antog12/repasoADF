@@ -607,6 +607,55 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Pivot')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flowPivot",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Pivot",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceDataExportacion": {},
+									"sinkPivot": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "DataFlow"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Pivot')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Primer Data Flow')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -2560,6 +2609,87 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LinkedSevice_ASQL_AWDW2')]",
+				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Pivot')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceDataExportacion"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkPivot"
+						}
+					],
+					"transformations": [
+						{
+							"name": "pivot"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Empresas as string,",
+						"          Frutas as string,",
+						"          Cliente as string,",
+						"          {Cantidad (Kg)} as short,",
+						"          {Año} as short,",
+						"          Pais as string,",
+						"          {Precio(kg)} as short",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'excel',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Pivot',",
+						"     fileName: 'DataExportacionEstructurado.xlsx',",
+						"     sheetName: 'Data',",
+						"     firstRowAsHeader: true) ~> sourceDataExportacion",
+						"sourceDataExportacion pivot(groupBy(Empresas,",
+						"          Frutas,",
+						"          Cliente,",
+						"          {Cantidad (Kg)},",
+						"          {Año}),",
+						"     pivotBy(Pais),",
+						"     {} = sum({Precio(kg)}),",
+						"     columnNaming: 'Ventas$N_$V(KG)',",
+						"     lateral: true) ~> pivot",
+						"pivot sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Pivot',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['Pivot.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkPivot"
+					]
+				}
+			},
+			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
 			]
 		},
