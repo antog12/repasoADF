@@ -313,6 +313,86 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Rank')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_AWDW2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceProductoCategoria"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkProductoCategoria"
+						}
+					],
+					"transformations": [
+						{
+							"name": "window"
+						},
+						{
+							"name": "rank"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CategoriaID as integer,",
+						"          Categoria as string,",
+						"          Producto as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          Cantidad as integer,",
+						"          Total as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: '     SELECT PC.ProductCategoryID CategoriaID, PC.Name Categoria, P.Name Producto, OD.UnitPrice, 100 Cantidad,\\n     (OD.UnitPrice*100) Total\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceProductoCategoria",
+						"sourceProductoCategoria window(over(CategoriaID),",
+						"     asc(CategoriaID, true),",
+						"     SUM = toDecimal(sum(UnitPrice*Cantidad)),",
+						"          AVG = toDecimal(avg(UnitPrice*Cantidad)),",
+						"          COUNT = count(UnitPrice*Cantidad),",
+						"          MAX = max(UnitPrice*Cantidad),",
+						"          MIN = min(UnitPrice*Cantidad)) ~> window",
+						"window rank(asc(Total, true),",
+						"     caseInsensitive: true,",
+						"     output(Ranking as long),",
+						"     dense: true) ~> rank",
+						"rank sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Ranking',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ProductoCategoriaRanking.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProductoCategoria"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Select')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1444,140 +1524,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/Surrogate Key')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Table_copy_sql_to_adls')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "vamos a copiar las tablas de AW hacia adls mediante parámetros",
-				"activities": [
-					{
-						"name": "Copy_table_sql_to_adls",
-						"type": "Copy",
-						"dependsOn": [
-							{
-								"activity": "Set variable File Name",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [
-							{
-								"name": "Source",
-								"value": "SalesLT.@{pipeline().parameters.TableName}"
-							},
-							{
-								"name": "Destination",
-								"value": "dataset/Move and transform activities/@{\ntoUpper(\n    variables('FileName')\n    )\n}"
-							}
-						],
-						"typeProperties": {
-							"source": {
-								"type": "AzureSqlSource",
-								"queryTimeout": "02:00:00",
-								"partitionOption": "None"
-							},
-							"sink": {
-								"type": "DelimitedTextSink",
-								"storeSettings": {
-									"type": "AzureBlobFSWriteSettings"
-								},
-								"formatSettings": {
-									"type": "DelimitedTextWriteSettings",
-									"quoteAllText": true,
-									"fileExtension": ".txt"
-								}
-							},
-							"enableStaging": false,
-							"translator": {
-								"type": "TabularTranslator",
-								"typeConversion": true,
-								"typeConversionSettings": {
-									"allowDataTruncation": true,
-									"treatBooleanAsNumber": false
-								}
-							}
-						},
-						"inputs": [
-							{
-								"referenceName": "ASQL_AWDW_Table",
-								"type": "DatasetReference",
-								"parameters": {
-									"DataBaseName": {
-										"value": "@pipeline().parameters.DatabaseName",
-										"type": "Expression"
-									},
-									"TableName": {
-										"value": "@pipeline().parameters.TableName",
-										"type": "Expression"
-									}
-								}
-							}
-						],
-						"outputs": [
-							{
-								"referenceName": "ADLS_almacenadls_table",
-								"type": "DatasetReference",
-								"parameters": {
-									"TableName": {
-										"value": "@variables('FileName')",
-										"type": "Expression"
-									}
-								}
-							}
-						]
-					},
-					{
-						"name": "Set variable File Name",
-						"type": "SetVariable",
-						"dependsOn": [],
-						"policy": {
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"variableName": "FileName",
-							"value": {
-								"value": "@{\n    pipeline().parameters.TableName\n}_@{\n    formatDateTime(utcnow(),'yyyyMMdd')\n}.csv",
-								"type": "Expression"
-							}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"parameters": {
-					"DatabaseName": {
-						"type": "string"
-					},
-					"TableName": {
-						"type": "String"
-					}
-				},
-				"variables": {
-					"FileName": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "Move and Transform Activity"
-				},
-				"annotations": [
-					"Exportar tabla a CSV"
-				]
-			},
-			"dependsOn": []
 		}
 	]
 }
