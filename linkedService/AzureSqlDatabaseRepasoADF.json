@@ -1,0 +1,17 @@
+{
+	"name": "AzureSqlDatabaseRepasoADF",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "antog12server.database.windows.net",
+			"database": "DB-repaso-ADF",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "antog12",
+			"encryptedCredential": "ew0KICAiVmVyc2lvbiI6ICIyMDE3LTExLTMwIiwNCiAgIlByb3RlY3Rpb25Nb2RlIjogIktleSIsDQogICJTZWNyZXRDb250ZW50VHlwZSI6ICJQbGFpbnRleHQiLA0KICAiQ3JlZGVudGlhbElkIjogIkRBVEFGQUNUT1JZQDIwRTM3NjBBLTJEOUUtNDQwMC05RTNBLTM3NDlCQUFEMjU4Nl8wOTk1ZmI0Ni1mMGJhLTRkZmMtOWY5Zi1iYjI5ZTlmMWFiZTgiDQp9"
+		}
+	}
+}
