@@ -13,6 +13,346 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Flatten')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceFlattenPorLinea"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceFlattenUnico"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceFlattenArray"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabaseRepasoADF",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkJsonDestino"
+						}
+					],
+					"transformations": [
+						{
+							"name": "flattenArrayColor",
+							"description": "Se usa com matrices(Arrays)"
+						},
+						{
+							"name": "flattenModeloArray"
+						},
+						{
+							"name": "unionJsonLineaUnico"
+						},
+						{
+							"name": "selectJson"
+						},
+						{
+							"name": "unionJsonfinal"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Color as string,",
+						"          Contacto as (Email as string, Telefono as string),",
+						"          Empresa as string,",
+						"          Id as string,",
+						"          Modelo as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'json',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Flatten',",
+						"     fileName: 'AutomovilDocumentoPorLinea.json',",
+						"     documentForm: 'documentPerLine') ~> sourceFlattenPorLinea",
+						"source(output(",
+						"          Color as string,",
+						"          Contacto as (Email as string, Telefono as string),",
+						"          Empresa as string,",
+						"          Id as string,",
+						"          Modelo as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'json',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Flatten',",
+						"     fileName: 'AutomovilDocumentoUnico.json',",
+						"     documentForm: 'singleDocument') ~> sourceFlattenUnico",
+						"source(output(",
+						"          Color as string[],",
+						"          Contacto as (Email as string, Telefono as string),",
+						"          Empresa as string,",
+						"          Id as string,",
+						"          Modelo as string[]",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'json',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Flatten',",
+						"     fileName: 'AutomovilMatriz.json',",
+						"     documentForm: 'arrayOfDocuments') ~> sourceFlattenArray",
+						"sourceFlattenArray foldDown(unroll(Color, Color),",
+						"     mapColumn(",
+						"          Color,",
+						"          Email = Contacto.Email,",
+						"          Telefono = Contacto.Telefono,",
+						"          Empresa,",
+						"          Id,",
+						"          Modelo",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenArrayColor",
+						"flattenArrayColor foldDown(unroll(Modelo, Modelo),",
+						"     mapColumn(",
+						"          Color,",
+						"          Email,",
+						"          Telefono,",
+						"          Empresa,",
+						"          Id,",
+						"          Modelo",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenModeloArray",
+						"sourceFlattenPorLinea, sourceFlattenUnico union(byName: true)~> unionJsonLineaUnico",
+						"unionJsonLineaUnico select(mapColumn(",
+						"          Color,",
+						"          Email = Contacto.Email,",
+						"          Telefono = Contacto.Telefono,",
+						"          Empresa,",
+						"          Id,",
+						"          Modelo",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectJson",
+						"selectJson, flattenModeloArray union(byName: true)~> unionJsonfinal",
+						"unionJsonfinal sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'Automovil',",
+						"     preSQLs:['truncate table dbo.Automovil'],",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sinkJsonDestino"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Join')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceProducto"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceSubcategoriaProducto"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkProductInnerjoin"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkProductLeftJoin"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkProductRightJoin"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkFullJoin"
+						}
+					],
+					"transformations": [
+						{
+							"name": "InnerJoin"
+						},
+						{
+							"name": "LeftOuterJoin"
+						},
+						{
+							"name": "RightOuterJoin"
+						},
+						{
+							"name": "FullJoin"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ProductoId as short,",
+						"          NombreProducto as string,",
+						"          ProductoSubCategoriaId as short,",
+						"          Descripcion as string,",
+						"          Categoria as string,",
+						"          Color as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'excel',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Join',",
+						"     fileName: 'Producto.xlsx',",
+						"     sheetName: 'Producto',",
+						"     firstRowAsHeader: true) ~> sourceProducto",
+						"source(output(",
+						"          SubCategoriaProductoId as short,",
+						"          NombreSubCategoria as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'excel',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Join',",
+						"     fileName: 'SubCategoriaProducto.xlsx',",
+						"     sheetName: 'SubCategoriaProducto',",
+						"     firstRowAsHeader: true) ~> sourceSubcategoriaProducto",
+						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> InnerJoin",
+						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
+						"     joinType:'left',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> LeftOuterJoin",
+						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
+						"     joinType:'right',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> RightOuterJoin",
+						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
+						"     joinType:'outer',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> FullJoin",
+						"InnerJoin sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Join',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ProductInnerJoin.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProductInnerjoin",
+						"LeftOuterJoin sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Join',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ProductLeftJoin.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProductLeftJoin",
+						"RightOuterJoin sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Join',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ProductRightJoin.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProductRightJoin",
+						"FullJoin sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Join',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ProductFullJoin.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkFullJoin"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/LookUp')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1228,6 +1568,57 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Flatten')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flowFlatten",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Flatten",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceFlattenPorLinea": {},
+									"sourceFlattenUnico": {},
+									"sourceFlattenArray": {},
+									"sinkJsonDestino": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "DataFlow"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Flatten')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Join')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1276,7 +1667,9 @@
 				},
 				"annotations": []
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Join')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LookUp')]",
@@ -1376,153 +1769,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/New Branch')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Pivot')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flowPivot",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Pivot",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceDataExportacion": {},
-									"sinkPivot": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/Pivot')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Select')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flowSelect",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Select",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceCategoriaProducto": {},
-									"sinkCategriaProducto": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/Select')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SurrogateKey')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flowSurrogateKey",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Surrogate Key",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceCategoriaProducto": {},
-									"sinkCategoriaSurrogateKey": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/Surrogate Key')]"
 			]
 		}
 	]

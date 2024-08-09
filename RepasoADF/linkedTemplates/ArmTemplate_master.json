@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"password\"de \"ASQLprueba\""
 		},
+		"AzureSqlDatabaseRepasoADF_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"AzureSqlDatabaseRepasoADF\""
+		},
 		"LinkedService_AWDW2_connectionString": {
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"LinkedService_AWDW2\""
@@ -44,6 +48,18 @@
 			"defaultValue": "@{linkedService().dataBaseNombre}"
 		},
 		"ASQLprueba_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
+		"AzureSqlDatabaseRepasoADF_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"AzureSqlDatabaseRepasoADF_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DB-repaso-ADF"
+		},
+		"AzureSqlDatabaseRepasoADF_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		},
@@ -105,6 +121,9 @@
 					"ASQLprueba_password": {
 						"value": "[parameters('ASQLprueba_password')]"
 					},
+					"AzureSqlDatabaseRepasoADF_password": {
+						"value": "[parameters('AzureSqlDatabaseRepasoADF_password')]"
+					},
 					"LinkedService_AWDW2_connectionString": {
 						"value": "[parameters('LinkedService_AWDW2_connectionString')]"
 					},
@@ -131,6 +150,15 @@
 					},
 					"ASQLprueba_properties_typeProperties_userName": {
 						"value": "[parameters('ASQLprueba_properties_typeProperties_userName')]"
+					},
+					"AzureSqlDatabaseRepasoADF_properties_typeProperties_server": {
+						"value": "[parameters('AzureSqlDatabaseRepasoADF_properties_typeProperties_server')]"
+					},
+					"AzureSqlDatabaseRepasoADF_properties_typeProperties_database": {
+						"value": "[parameters('AzureSqlDatabaseRepasoADF_properties_typeProperties_database')]"
+					},
+					"AzureSqlDatabaseRepasoADF_properties_typeProperties_userName": {
+						"value": "[parameters('AzureSqlDatabaseRepasoADF_properties_typeProperties_userName')]"
 					},
 					"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 						"value": "[parameters('Linked_Service_ADLS_Origen_properties_typeProperties_url')]"

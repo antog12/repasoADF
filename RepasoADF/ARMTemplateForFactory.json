@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"password\"de \"ASQLprueba\""
 		},
+		"AzureSqlDatabaseRepasoADF_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"AzureSqlDatabaseRepasoADF\""
+		},
 		"LinkedService_AWDW2_connectionString": {
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"connectionString\"de \"LinkedService_AWDW2\""
@@ -44,6 +48,18 @@
 			"defaultValue": "@{linkedService().dataBaseNombre}"
 		},
 		"ASQLprueba_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
+		"AzureSqlDatabaseRepasoADF_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"AzureSqlDatabaseRepasoADF_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DB-repaso-ADF"
+		},
+		"AzureSqlDatabaseRepasoADF_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		},
@@ -451,6 +467,57 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/Exists')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Flatten')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flowFlatten",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "Flatten",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceFlattenPorLinea": {},
+									"sourceFlattenUnico": {},
+									"sourceFlattenArray": {},
+									"sinkJsonDestino": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "DataFlow"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/Flatten')]"
 			]
 		},
 		{
@@ -1751,6 +1818,28 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlDatabaseRepasoADF')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('AzureSqlDatabaseRepasoADF_properties_typeProperties_server')]",
+					"database": "[parameters('AzureSqlDatabaseRepasoADF_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('AzureSqlDatabaseRepasoADF_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('AzureSqlDatabaseRepasoADF_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/LinkedService_AWDW2')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
 			"apiVersion": "2018-06-01",
@@ -2351,6 +2440,171 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Flatten')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceFlattenPorLinea"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceFlattenUnico"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceFlattenArray"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabaseRepasoADF",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkJsonDestino"
+						}
+					],
+					"transformations": [
+						{
+							"name": "flattenArrayColor",
+							"description": "Se usa com matrices(Arrays)"
+						},
+						{
+							"name": "flattenModeloArray"
+						},
+						{
+							"name": "unionJsonLineaUnico"
+						},
+						{
+							"name": "selectJson"
+						},
+						{
+							"name": "unionJsonfinal"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Color as string,",
+						"          Contacto as (Email as string, Telefono as string),",
+						"          Empresa as string,",
+						"          Id as string,",
+						"          Modelo as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'json',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Flatten',",
+						"     fileName: 'AutomovilDocumentoPorLinea.json',",
+						"     documentForm: 'documentPerLine') ~> sourceFlattenPorLinea",
+						"source(output(",
+						"          Color as string,",
+						"          Contacto as (Email as string, Telefono as string),",
+						"          Empresa as string,",
+						"          Id as string,",
+						"          Modelo as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'json',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Flatten',",
+						"     fileName: 'AutomovilDocumentoUnico.json',",
+						"     documentForm: 'singleDocument') ~> sourceFlattenUnico",
+						"source(output(",
+						"          Color as string[],",
+						"          Contacto as (Email as string, Telefono as string),",
+						"          Empresa as string,",
+						"          Id as string,",
+						"          Modelo as string[]",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'json',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Flatten',",
+						"     fileName: 'AutomovilMatriz.json',",
+						"     documentForm: 'arrayOfDocuments') ~> sourceFlattenArray",
+						"sourceFlattenArray foldDown(unroll(Color, Color),",
+						"     mapColumn(",
+						"          Color,",
+						"          Email = Contacto.Email,",
+						"          Telefono = Contacto.Telefono,",
+						"          Empresa,",
+						"          Id,",
+						"          Modelo",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenArrayColor",
+						"flattenArrayColor foldDown(unroll(Modelo, Modelo),",
+						"     mapColumn(",
+						"          Color,",
+						"          Email,",
+						"          Telefono,",
+						"          Empresa,",
+						"          Id,",
+						"          Modelo",
+						"     ),",
+						"     skipDuplicateMapInputs: false,",
+						"     skipDuplicateMapOutputs: false) ~> flattenModeloArray",
+						"sourceFlattenPorLinea, sourceFlattenUnico union(byName: true)~> unionJsonLineaUnico",
+						"unionJsonLineaUnico select(mapColumn(",
+						"          Color,",
+						"          Email = Contacto.Email,",
+						"          Telefono = Contacto.Telefono,",
+						"          Empresa,",
+						"          Id,",
+						"          Modelo",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectJson",
+						"selectJson, flattenModeloArray union(byName: true)~> unionJsonfinal",
+						"unionJsonfinal sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'Automovil',",
+						"     preSQLs:['truncate table dbo.Automovil'],",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sinkJsonDestino"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseRepasoADF')]"
 			]
 		},
 		{
