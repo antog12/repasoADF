@@ -1,0 +1,70 @@
+{
+	"name": "Alter Row",
+	"properties": {
+		"folder": {
+			"name": "Data Flow"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabaseRepasoADF",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceEmpleado"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabaseRepasoADF",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkEmpleado"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRow"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as integer,",
+				"          Nombre as string,",
+				"          Apellido as string,",
+				"          Cargo as string,",
+				"          FechaContratacion as date,",
+				"          FechaCumpleanio as date,",
+				"          Email as string,",
+				"          Telefono as string,",
+				"          ContactoEmergencia as string,",
+				"          ContactoEmergenciaTelefono as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'Empleado',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceEmpleado",
+				"sourceEmpleado alterRow(deleteIf(Cargo=='Production Technician - WC40')) ~> alterRow",
+				"alterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'Empleado',",
+				"     insertable: false,",
+				"     updateable: false,",
+				"     deletable: true,",
+				"     upsertable: false,",
+				"     keys:['ID'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sinkEmpleado"
+			]
+		}
+	}
+}
