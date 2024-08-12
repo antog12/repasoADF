@@ -1762,7 +1762,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Data flowalterRowDelete",
+						"name": "Data flow alterRow",
 						"type": "ExecuteDataFlow",
 						"dependsOn": [],
 						"policy": {
