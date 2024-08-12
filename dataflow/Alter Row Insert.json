@@ -1,0 +1,72 @@
+{
+	"name": "Alter Row Insert",
+	"properties": {
+		"folder": {
+			"name": "Data Flow"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "LinkedService_BlobStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceEmpleadoNuevo"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabaseRepasoADF",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkEmpleadoNuevo"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRowNuevo"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as short,",
+				"          Nombre as string,",
+				"          Apellido as string,",
+				"          Cargo as string,",
+				"          FechaContratacion as date,",
+				"          FechaCumpleanio as date,",
+				"          Email as string,",
+				"          Telefono as string,",
+				"          ContactoEmergencia as string,",
+				"          ContactoEmergenciaTelefono as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'excel',",
+				"     container: 'dataflowdataset',",
+				"     folderPath: 'Alter Row',",
+				"     fileName: 'EmpleadoNuevo.xlsx',",
+				"     sheetName: 'Data',",
+				"     firstRowAsHeader: true) ~> sourceEmpleadoNuevo",
+				"sourceEmpleadoNuevo alterRow(insertIf(year(FechaContratacion)==2007),",
+				"     deleteIf(true())) ~> alterRowNuevo",
+				"alterRowNuevo sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'Empleado',",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sinkEmpleadoNuevo"
+			]
+		}
+	}
+}
