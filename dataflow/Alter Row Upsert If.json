@@ -1,0 +1,72 @@
+{
+	"name": "Alter Row Upsert If",
+	"properties": {
+		"folder": {
+			"name": "Data Flow"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "LinkedService_BlobStorage",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceAlterRowEmpleadoUpsertIf"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureSqlDatabaseRepasoADF",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "alterRow"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          ID as short,",
+				"          Nombre as string,",
+				"          Apellido as string,",
+				"          Cargo as string,",
+				"          FechaContratacion as date,",
+				"          FechaCumpleanio as date,",
+				"          Email as string,",
+				"          Telefono as string,",
+				"          ContactoEmergencia as string,",
+				"          ContactoEmergenciaTelefono as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'excel',",
+				"     container: 'dataflowdataset',",
+				"     folderPath: 'Alter Row',",
+				"     fileName: 'EmpleadoNuevo.xlsx',",
+				"     sheetName: 'Data',",
+				"     firstRowAsHeader: true) ~> sourceAlterRowEmpleadoUpsertIf",
+				"sourceAlterRowEmpleadoUpsertIf alterRow(upsertIf(true())) ~> alterRow",
+				"alterRow sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'Empleado',",
+				"     insertable: false,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: true,",
+				"     keys:['ID'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+			]
+		}
+	}
+}
