@@ -1,0 +1,11 @@
+{
+	"name": "LinkedSerevice_KV",
+	"properties": {
+		"description": "hace referencia al key vault",
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://AlmacenKeyVaultadsl.vault.azure.net/"
+		}
+	}
+}
