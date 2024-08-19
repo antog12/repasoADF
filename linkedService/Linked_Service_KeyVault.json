@@ -1,0 +1,10 @@
+{
+	"name": "Linked_Service_KeyVault",
+	"properties": {
+		"annotations": [],
+		"type": "AzureKeyVault",
+		"typeProperties": {
+			"baseUrl": "https://AlmacenclavesKV.vault.azure.net/"
+		}
+	}
+}
