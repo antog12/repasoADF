@@ -47,6 +47,12 @@
 		"AzureSqlDatabaseRepasoADF_properties_typeProperties_userName": {
 			"value": "antog12"
 		},
+		"LinkedSerevice_KV_properties_typeProperties_baseUrl": {
+			"value": "https://AlmacenKeyVaultadsl.vault.azure.net/"
+		},
+		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
+			"value": "https://almacenadls.dfs.core.windows.net/"
+		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"value": "https://almacenadls.dfs.core.windows.net/"
 		},
@@ -66,6 +72,15 @@
 			"value": "@{linkedService().DataBaseName}"
 		},
 		"linkedService_asql_aw_properties_typeProperties_userName": {
+			"value": "antog12"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
+			"value": "antog12server.database.windows.net"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
+			"value": "DB-repaso-ADF"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
 			"value": "antog12"
 		},
 		"containerUri": {

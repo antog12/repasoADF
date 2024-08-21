@@ -63,6 +63,14 @@
 			"type": "string",
 			"defaultValue": "antog12"
 		},
+		"LinkedSerevice_KV_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://AlmacenKeyVaultadsl.vault.azure.net/"
+		},
+		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
+		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
@@ -88,6 +96,18 @@
 			"defaultValue": "@{linkedService().DataBaseName}"
 		},
 		"linkedService_asql_aw_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DB-repaso-ADF"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		}
@@ -2192,6 +2212,43 @@
 				}
 			},
 			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LinkedSerevice_KV')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "hace referencia al key vault",
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('LinkedSerevice_KV_properties_typeProperties_baseUrl')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LinkedServiceADSL_KeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LinkedSerevice_KV",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "DataLake-KeyVault"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedSerevice_KV')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LinkedService_AWDW2')]",
@@ -4773,6 +4830,34 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_AWDW2')]",
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LinkedSeevice_DB_repaso_ADF_KV')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server')]",
+					"database": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LinkedSerevice_KV",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "ASQL-DB-repaso-ADF"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedSerevice_KV')]"
 			]
 		}
 	]

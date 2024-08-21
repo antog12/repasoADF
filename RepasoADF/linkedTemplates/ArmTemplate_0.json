@@ -63,6 +63,10 @@
 			"type": "string",
 			"defaultValue": "antog12"
 		},
+		"LinkedSerevice_KV_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://AlmacenKeyVaultadsl.vault.azure.net/"
+		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
@@ -90,6 +94,10 @@
 		"linkedService_asql_aw_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
+		},
+		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
@@ -141,6 +149,20 @@
 						"type": "SecureString",
 						"value": "[parameters('AzureSqlDatabaseRepasoADF_password')]"
 					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LinkedSerevice_KV')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "hace referencia al key vault",
+				"annotations": [],
+				"type": "AzureKeyVault",
+				"typeProperties": {
+					"baseUrl": "[parameters('LinkedSerevice_KV_properties_typeProperties_baseUrl')]"
 				}
 			},
 			"dependsOn": []
@@ -744,6 +766,29 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/LinkedServiceADSL_KeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LinkedSerevice_KV",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "DataLake-KeyVault"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedSerevice_KV')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Aggregate')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -908,164 +953,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseRepasoADF')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Alter Row Upsert If')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceAlterRowEmpleadoUpsertIf"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzureSqlDatabaseRepasoADF",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "alterRow"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ID as short,",
-						"          Nombre as string,",
-						"          Apellido as string,",
-						"          Cargo as string,",
-						"          FechaContratacion as date,",
-						"          FechaCumpleanio as date,",
-						"          Email as string,",
-						"          Telefono as string,",
-						"          ContactoEmergencia as string,",
-						"          ContactoEmergenciaTelefono as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'excel',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Alter Row',",
-						"     fileName: 'EmpleadoNuevo.xlsx',",
-						"     sheetName: 'Data',",
-						"     firstRowAsHeader: true) ~> sourceAlterRowEmpleadoUpsertIf",
-						"sourceAlterRowEmpleadoUpsertIf alterRow(upsertIf(true())) ~> alterRow",
-						"alterRow sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     store: 'sqlserver',",
-						"     schemaName: 'dbo',",
-						"     tableName: 'Empleado',",
-						"     insertable: false,",
-						"     updateable: false,",
-						"     deletable: false,",
-						"     upsertable: true,",
-						"     keys:['ID'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
-					]
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]",
-				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseRepasoADF')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Alter Row')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "AzureSqlDatabaseRepasoADF",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceEmpleado"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzureSqlDatabaseRepasoADF",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkEmpleado"
-						}
-					],
-					"transformations": [
-						{
-							"name": "alterRow"
-						},
-						{
-							"name": "derivedColumn1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ID as integer,",
-						"          Nombre as string,",
-						"          Apellido as string,",
-						"          Cargo as string,",
-						"          FechaContratacion as date,",
-						"          FechaCumpleanio as date,",
-						"          Email as string,",
-						"          Telefono as string,",
-						"          ContactoEmergencia as string,",
-						"          ContactoEmergenciaTelefono as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     store: 'sqlserver',",
-						"     schemaName: 'dbo',",
-						"     tableName: 'Empleado',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceEmpleado",
-						"sourceEmpleado alterRow(deleteIf(Cargo=='Production Technician - WC40'),",
-						"     updateIf(Cargo=='Production Technician - WC45')) ~> alterRow",
-						"alterRow derive(Cargo = 'REPRESENTANTE DE VENTAS') ~> derivedColumn1",
-						"derivedColumn1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     store: 'sqlserver',",
-						"     schemaName: 'dbo',",
-						"     tableName: 'Empleado',",
-						"     insertable: false,",
-						"     updateable: true,",
-						"     deletable: true,",
-						"     upsertable: false,",
-						"     keys:['ID'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sinkEmpleado"
-					]
-				}
-			},
-			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseRepasoADF')]"
 			]
 		}
