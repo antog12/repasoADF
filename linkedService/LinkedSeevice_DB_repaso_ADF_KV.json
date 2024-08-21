@@ -1,0 +1,23 @@
+{
+	"name": "LinkedSeevice_DB_repaso_ADF_KV",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "antog12server.database.windows.net",
+			"database": "DB-repaso-ADF",
+			"encrypt": "mandatory",
+			"trustServerCertificate": false,
+			"authenticationType": "SQL",
+			"userName": "antog12",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "LinkedSerevice_KV",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "ASQL-DB-repaso-ADF"
+			}
+		}
+	}
+}
