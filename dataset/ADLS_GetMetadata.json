@@ -1,0 +1,26 @@
+{
+	"name": "ADLS_GetMetadata",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceADSL_KeyVault",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "General activities"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "7. General Activities/1. Get Metadata",
+				"fileSystem": "dataset"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}
