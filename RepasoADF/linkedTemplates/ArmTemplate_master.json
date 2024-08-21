@@ -63,6 +63,18 @@
 			"type": "string",
 			"defaultValue": "antog12"
 		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DB-repaso-ADF"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
 		"LinkedSerevice_KV_properties_typeProperties_baseUrl": {
 			"type": "string",
 			"defaultValue": "https://AlmacenKeyVaultadsl.vault.azure.net/"
@@ -96,18 +108,6 @@
 			"defaultValue": "@{linkedService().DataBaseName}"
 		},
 		"linkedService_asql_aw_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "antog12"
-		},
-		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "antog12server.database.windows.net"
-		},
-		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "DB-repaso-ADF"
-		},
-		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		},
@@ -204,6 +204,15 @@
 					"linkedService_asql_aw_properties_typeProperties_userName": {
 						"value": "[parameters('linkedService_asql_aw_properties_typeProperties_userName')]"
 					},
+					"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
+						"value": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server')]"
+					},
+					"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
+						"value": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database')]"
+					},
+					"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
+						"value": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName')]"
+					},
 					"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
 						"value": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]"
 					}
@@ -244,15 +253,6 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
-					},
-					"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
-						"value": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server')]"
-					},
-					"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
-						"value": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database')]"
-					},
-					"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
-						"value": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName')]"
 					}
 				}
 			},

@@ -6,18 +6,6 @@
 			"type": "string",
 			"metadata": "Nombre de instancia de Data Factory",
 			"defaultValue": "RepasoADF"
-		},
-		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
-			"type": "string",
-			"defaultValue": "antog12server.database.windows.net"
-		},
-		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
-			"type": "string",
-			"defaultValue": "DB-repaso-ADF"
-		},
-		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
-			"type": "string",
-			"defaultValue": "antog12"
 		}
 	},
 	"variables": {
@@ -25,27 +13,74 @@
 	},
 	"resources": [
 		{
-			"name": "[concat(parameters('factoryName'), '/LinkedSeevice_DB_repaso_ADF_KV')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"name": "[concat(parameters('factoryName'), '/Window')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
 			"properties": {
-				"annotations": [],
-				"type": "AzureSqlDatabase",
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
 				"typeProperties": {
-					"server": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server')]",
-					"database": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database')]",
-					"encrypt": "mandatory",
-					"trustServerCertificate": false,
-					"authenticationType": "SQL",
-					"userName": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName')]",
-					"password": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "LinkedSerevice_KV",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "ASQL-DB-repaso-ADF"
-					}
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_AWDW2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceProductoCategoria"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkProductoCategoria"
+						}
+					],
+					"transformations": [
+						{
+							"name": "window"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CategoriaID as integer,",
+						"          Categoria as string,",
+						"          Producto as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          Cantidad as integer,",
+						"          Total as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: '     SELECT PC.ProductCategoryID CategoriaID, PC.Name Categoria, P.Name Producto, OD.UnitPrice, 100 Cantidad,\\n     (OD.UnitPrice*100) Total\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceProductoCategoria",
+						"sourceProductoCategoria window(over(CategoriaID),",
+						"     asc(CategoriaID, true),",
+						"     SUM = toDecimal(sum(UnitPrice*Cantidad)),",
+						"          AVG = toDecimal(avg(UnitPrice*Cantidad)),",
+						"          COUNT = count(UnitPrice*Cantidad),",
+						"          MAX = max(UnitPrice*Cantidad),",
+						"          MIN = min(UnitPrice*Cantidad)) ~> window",
+						"window sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Window',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ProductoCategoria.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProductoCategoria"
+					]
 				}
 			},
 			"dependsOn": []
