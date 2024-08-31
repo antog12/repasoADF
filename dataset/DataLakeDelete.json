@@ -1,0 +1,26 @@
+{
+	"name": "DataLakeDelete",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceADSL_KeyVault",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "General activities"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "7. General Activities/2. Delete",
+				"fileSystem": "dataset"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	}
+}

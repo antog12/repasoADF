@@ -1,0 +1,43 @@
+{
+	"name": "Delete",
+	"properties": {
+		"activities": [
+			{
+				"name": "Delete",
+				"type": "Delete",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "DataLakeDelete",
+						"type": "DatasetReference"
+					},
+					"logStorageSettings": {
+						"linkedServiceName": {
+							"referenceName": "LinkedServiceADSL_KeyVault",
+							"type": "LinkedServiceReference"
+						},
+						"path": "dataset/7. General Activities/2. Delete/Log/Delete_Log"
+					},
+					"enableLogging": true,
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"fileListPath": "dataset/7. General Activities/2. Delete/Lista.txt",
+						"enablePartitionDiscovery": false
+					}
+				}
+			}
+		],
+		"folder": {
+			"name": "General activities"
+		},
+		"annotations": []
+	}
+}
