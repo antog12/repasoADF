@@ -1,0 +1,171 @@
+{
+	"name": "foreach-EXCEL",
+	"properties": {
+		"activities": [
+			{
+				"name": "Get Metadata Folder",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "ADLS_Folder_foreach",
+						"type": "DatasetReference"
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "Set variable File",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Get Metadata Folder",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "File",
+					"value": {
+						"value": "@activity('Get Metadata Folder').output.childItems",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "FilterExcel",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "Set variable File",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('File')",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@contains(item().name, '.xlsx')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "ForEach EXCEL",
+				"description": "va a cargar solo los archivos txt",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "FilterExcel",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('FilterExcel').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Copy data EXCEL",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "ExcelSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "ADLS_EXCEL",
+									"type": "DatasetReference",
+									"parameters": {
+										"Archivo": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "ASQL_RepasdoADF_Ventas",
+									"type": "DatasetReference"
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"File": {
+				"type": "Array"
+			}
+		},
+		"folder": {
+			"name": "Iteraciones y condicionales"
+		},
+		"annotations": []
+	}
+}
