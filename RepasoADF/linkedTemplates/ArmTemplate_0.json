@@ -106,6 +106,10 @@
 		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
+		},
+		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
@@ -325,21 +329,6 @@
 						"value": "[parameters('linkedService_asql_aw_password')]"
 					}
 				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "Iteraciones y condicionales"
-				},
-				"annotations": []
 			},
 			"dependsOn": []
 		},
@@ -854,6 +843,29 @@
 							"type": "LinkedServiceReference"
 						},
 						"secretName": "ASQL-DB-repaso-ADF"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedSerevice_KV')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LinkedServiceADSL_KeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LinkedSerevice_KV",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "DataLake-KeyVault"
 					}
 				}
 			},
