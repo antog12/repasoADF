@@ -1,0 +1,64 @@
+{
+	"name": "ASQL_RepasdoADF_Ventas",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedSeevice_DB_repaso_ADF_KV",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Iteraciones y condicionales"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "VentasID",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Nombre",
+				"type": "varchar"
+			},
+			{
+				"name": "Apellido",
+				"type": "varchar"
+			},
+			{
+				"name": "dni",
+				"type": "varchar"
+			},
+			{
+				"name": "fechaPedido",
+				"type": "date"
+			},
+			{
+				"name": "producto",
+				"type": "varchar"
+			},
+			{
+				"name": "NumeroOrden",
+				"type": "varchar"
+			},
+			{
+				"name": "precioUnitario",
+				"type": "real",
+				"precision": 7
+			},
+			{
+				"name": "Cantidad",
+				"type": "int",
+				"precision": 10
+			},
+			{
+				"name": "Total",
+				"type": "real",
+				"precision": 7
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "Ventas"
+		}
+	}
+}
