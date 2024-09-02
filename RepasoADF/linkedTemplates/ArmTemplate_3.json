@@ -524,6 +524,42 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/ADLS_EXCEL')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceADSL_KeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"Archivo": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Iteraciones y condicionales"
+				},
+				"annotations": [],
+				"type": "Excel",
+				"typeProperties": {
+					"sheetName": "Data",
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().Archivo",
+							"type": "Expression"
+						},
+						"folderPath": "8. Iteration and conditionals/1. ForEach",
+						"fileSystem": "dataset"
+					},
+					"firstRowAsHeader": true
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ADLS_Folder_foreach')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1016,7 +1052,7 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/foreach-TXT')]",
+			"name": "[concat(parameters('factoryName'), '/foreach-EXCEL')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -1077,7 +1113,7 @@
 						}
 					},
 					{
-						"name": "Filtertxt",
+						"name": "FilterExcel",
 						"type": "Filter",
 						"dependsOn": [
 							{
@@ -1094,18 +1130,18 @@
 								"type": "Expression"
 							},
 							"condition": {
-								"value": "@contains(item().name, '.txt')",
+								"value": "@contains(item().name, '.xlsx')",
 								"type": "Expression"
 							}
 						}
 					},
 					{
-						"name": "ForEach txt",
+						"name": "ForEach EXCEL",
 						"description": "va a cargar solo los archivos txt",
 						"type": "ForEach",
 						"dependsOn": [
 							{
-								"activity": "Filtertxt",
+								"activity": "FilterExcel",
 								"dependencyConditions": [
 									"Succeeded"
 								]
@@ -1114,12 +1150,13 @@
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@activity('Filtertxt').output.value",
+								"value": "@activity('FilterExcel').output.value",
 								"type": "Expression"
 							},
+							"isSequential": true,
 							"activities": [
 								{
-									"name": "Copy data TXT",
+									"name": "Copy data EXCEL",
 									"type": "Copy",
 									"dependsOn": [],
 									"policy": {
@@ -1132,14 +1169,11 @@
 									"userProperties": [],
 									"typeProperties": {
 										"source": {
-											"type": "DelimitedTextSource",
+											"type": "ExcelSource",
 											"storeSettings": {
 												"type": "AzureBlobFSReadSettings",
 												"recursive": true,
 												"enablePartitionDiscovery": false
-											},
-											"formatSettings": {
-												"type": "DelimitedTextReadSettings"
 											}
 										},
 										"sink": {
@@ -1159,7 +1193,7 @@
 									},
 									"inputs": [
 										{
-											"referenceName": "ADLS_Origen_TXT",
+											"referenceName": "ADLS_EXCEL",
 											"type": "DatasetReference",
 											"parameters": {
 												"Archivo": {
@@ -1196,94 +1230,8 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/datasets/ADLS_Folder_foreach')]",
-				"[concat(variables('factoryId'), '/datasets/ADLS_Origen_TXT')]",
+				"[concat(variables('factoryId'), '/datasets/ADLS_EXCEL')]",
 				"[concat(variables('factoryId'), '/datasets/ASQL_RepasdoADF_Ventas')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Execute Pipeline')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Execute Pipeline Getmetadata",
-						"description": "Hace un llamamiento a otros pipelines",
-						"type": "ExecutePipeline",
-						"dependsOn": [],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Get Metadata",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Execute Pipeline Set Variables",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Execute Pipeline Getmetadata",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Set Variable",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					},
-					{
-						"name": "Execute PipelineStore Procedure",
-						"type": "ExecutePipeline",
-						"dependsOn": [
-							{
-								"activity": "Execute Pipeline Set Variables",
-								"dependencyConditions": [
-									"Succeeded"
-								]
-							}
-						],
-						"policy": {
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"pipeline": {
-								"referenceName": "Store Procedure",
-								"type": "PipelineReference"
-							},
-							"waitOnCompletion": true,
-							"parameters": {}
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "General activities"
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/pipelines/Get Metadata')]",
-				"[concat(variables('factoryId'), '/pipelines/Set Variable')]"
 			]
 		}
 	]
