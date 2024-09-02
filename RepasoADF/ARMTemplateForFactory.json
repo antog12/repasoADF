@@ -6015,6 +6015,21 @@
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_AWDW2')]",
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Pruebas"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
 		}
 	]
 }

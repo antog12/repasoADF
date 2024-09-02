@@ -7,6 +7,18 @@
 			"metadata": "Nombre de instancia de Data Factory",
 			"defaultValue": "RepasoADF"
 		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DB-repaso-ADF"
+		},
+		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
 		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
 			"type": "string",
 			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
@@ -16,6 +28,32 @@
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LinkedSeevice_DB_repaso_ADF_KV')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server')]",
+					"database": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName')]",
+					"password": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LinkedSerevice_KV",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "ASQL-DB-repaso-ADF"
+					}
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/LinkedServiceADSL_KeyVault')]",
 			"type": "Microsoft.DataFactory/factories/linkedServices",
@@ -1986,115 +2024,6 @@
 						"          ContactoEmergencia,",
 						"          ContactoEmergenciaTelefono",
 						"     )) ~> sinkEmpleado"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Surrogate Key')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_AWDW2",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceCategoriaProducto"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkCategoriaSurrogateKey"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn"
-						},
-						{
-							"name": "select"
-						},
-						{
-							"name": "aggregate"
-						},
-						{
-							"name": "surrogateKey",
-							"description": "Agregue una nueva clave ID comenzando por 1 con el paso 1.\nCreamos una nueva columna llamada ID."
-						},
-						{
-							"name": "select1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Categoria as string,",
-						"          Producto as string,",
-						"          UnitPrice as decimal(19,4),",
-						"          UnitPriceDiscount as decimal(19,4)",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     store: 'sqlserver',",
-						"     query: 'SELECT PC.Name Categoria, P.Name Producto, OD.UnitPrice, OD.UnitPriceDiscount\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceCategoriaProducto",
-						"sourceCategoriaProducto derive(CATEGORIA = upper(Categoria),",
-						"          Producto = upper(Producto),",
-						"          {Monto Total} = toDecimal(UnitPrice-UnitPriceDiscount)) ~> derivedColumn",
-						"derivedColumn select(mapColumn(",
-						"          PRODUCTO = Producto,",
-						"          CATEGORIA = derivedColumn@CATEGORIA,",
-						"          {MONTO TOTAL} = {Monto Total}",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select",
-						"select aggregate(groupBy(PRODUCTO,",
-						"          CATEGORIA),",
-						"     SUMA = sum({MONTO TOTAL}),",
-						"          MAX = max({MONTO TOTAL}),",
-						"          MIN = min({MONTO TOTAL}),",
-						"          AVG = toDecimal(avg({MONTO TOTAL})),",
-						"          CONTEO = count({MONTO TOTAL})) ~> aggregate",
-						"aggregate keyGenerate(output(ID as long),",
-						"     startAt: 1L,",
-						"     stepValue: 1L) ~> surrogateKey",
-						"surrogateKey select(mapColumn(",
-						"          ID,",
-						"          PRODUCTO,",
-						"          CATEGORIA,",
-						"          SUMA,",
-						"          MAX,",
-						"          MIN,",
-						"          AVG,",
-						"          CONTEO",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'SurrogateKey',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['CategoriaProductoAggregate.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkCategoriaSurrogateKey"
 					]
 				}
 			},
