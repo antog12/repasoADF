@@ -1,0 +1,56 @@
+{
+	"name": "pruebasForeach",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach_Pruebas",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('FileNames')",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "filename",
+								"value": {
+									"value": "@item()",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"FileNames": {
+				"type": "Array",
+				"defaultValue": [
+					"CustomerFile.txt",
+					"ProductFile.txt",
+					"OrderFile.txt"
+				]
+			},
+			"filename": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pruebas"
+		},
+		"annotations": []
+	}
+}
