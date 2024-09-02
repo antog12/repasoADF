@@ -728,6 +728,51 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Filters')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Filter",
+						"type": "Filter",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@variables('FileName')",
+								"type": "Expression"
+							},
+							"condition": {
+								"value": "@contains(item(),'.txt')",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"FileName": {
+						"type": "Array",
+						"defaultValue": [
+							"Employ.txt",
+							"Sales.txt",
+							"Employ.json",
+							"Employ.parquet",
+							"customer.txt"
+						]
+					}
+				},
+				"folder": {
+					"name": "Iteraciones y condicionales"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Flatten')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -5237,6 +5282,21 @@
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_AWDW2')]",
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipeline2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Iteraciones y condicionales"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
 		}
 	]
 }

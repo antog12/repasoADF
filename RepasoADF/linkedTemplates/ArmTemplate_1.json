@@ -6,12 +6,124 @@
 			"type": "string",
 			"metadata": "Nombre de instancia de Data Factory",
 			"defaultValue": "RepasoADF"
+		},
+		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
 		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
 	},
 	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/LinkedServiceADSL_KeyVault')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "AzureKeyVaultSecret",
+						"store": {
+							"referenceName": "LinkedSerevice_KV",
+							"type": "LinkedServiceReference"
+						},
+						"secretName": "DataLake-KeyVault"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Aggregate')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_AWDW2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceCategoriaProducto"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkCategriaProducto"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn"
+						},
+						{
+							"name": "select"
+						},
+						{
+							"name": "aggregate"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Categoria as string,",
+						"          Producto as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          UnitPriceDiscount as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'SELECT PC.Name Categoria, P.Name Producto, OD.UnitPrice, OD.UnitPriceDiscount\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceCategoriaProducto",
+						"sourceCategoriaProducto derive(CATEGORIA = upper(Categoria),",
+						"          Producto = upper(Producto),",
+						"          {Monto Total} = toDecimal(UnitPrice-UnitPriceDiscount)) ~> derivedColumn",
+						"derivedColumn select(mapColumn(",
+						"          PRODUCTO = Producto,",
+						"          CATEGORIA = derivedColumn@CATEGORIA,",
+						"          {MONTO TOTAL} = {Monto Total}",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select",
+						"select aggregate(groupBy(PRODUCTO,",
+						"          CATEGORIA),",
+						"     SUMA = sum({MONTO TOTAL}),",
+						"          MAX = max({MONTO TOTAL}),",
+						"          MIN = min({MONTO TOTAL}),",
+						"          AVG = toDecimal(avg({MONTO TOTAL})),",
+						"          CONTEO = count({MONTO TOTAL})) ~> aggregate",
+						"aggregate sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Aggregate',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['CategoriaProductoAggregate.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkCategriaProducto"
+					]
+				}
+			},
+			"dependsOn": []
+		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Alter Row Insert')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
@@ -1983,220 +2095,6 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     partitionBy('hash', 1)) ~> sinkCategoriaSurrogateKey"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Union')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourcemovie1"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceMovie2"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceMovie3"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkMOVIE"
-						}
-					],
-					"transformations": [
-						{
-							"name": "union1",
-							"description": "Por posición ya que el orden de los datos es el mismo pero no hay encabezados en movie2"
-						},
-						{
-							"name": "union2",
-							"description": "aqui como los encabezados tienen nombre se establecen por name"
-						}
-					],
-					"scriptLines": [
-						"source(useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Union',",
-						"     fileName: 'DataSetMovie1.csv',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true) ~> sourcemovie1",
-						"source(useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Union',",
-						"     fileName: 'DataSetMovie2.csv',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: false) ~> sourceMovie2",
-						"source(useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Union',",
-						"     fileName: 'DataSetMovie3.csv',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true) ~> sourceMovie3",
-						"sourcemovie1, sourceMovie2 union(byName: false)~> union1",
-						"union1, sourceMovie3 union(byName: true)~> union2",
-						"union2 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Union',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['movie.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkMOVIE"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Unpivot')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceUnpivot"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkDataUnpivot"
-						}
-					],
-					"transformations": [
-						{
-							"name": "unpivot"
-						},
-						{
-							"name": "derivedColumn"
-						},
-						{
-							"name": "select1"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Empresas as string,",
-						"          Frutas as string,",
-						"          Cliente as string,",
-						"          {Cantidad (Kg)} as short,",
-						"          {Año} as short,",
-						"          {Ventas EE.UU. KG} as short,",
-						"          {Ventas China KG} as short,",
-						"          {Ventas España KG} as short,",
-						"          {Ventas Francia KG} as short,",
-						"          {Ventas Canada KG} as short",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'excel',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Unpivot',",
-						"     fileName: 'DataExportacionNoEstructurada.xlsx',",
-						"     sheetName: 'Data Exportacion',",
-						"     firstRowAsHeader: true) ~> sourceUnpivot",
-						"sourceUnpivot unpivot(output(",
-						"          Pais as string,",
-						"          {Precio(KG)} as short",
-						"     ),",
-						"     ungroupBy(Empresas,",
-						"          Frutas,",
-						"          Cliente,",
-						"          {Cantidad (Kg)},",
-						"          {Año}),",
-						"     pivotValues: ['Ventas EE.UU. KG', 'Ventas China KG', 'Ventas España KG', 'Ventas Francia KG', 'Ventas Canada KG'],",
-						"     lateral: true,",
-						"     ignoreNullPivots: true) ~> unpivot",
-						"unpivot derive(Posicion1 = instr(Pais,' '),",
-						"          Posicion2 = instr(Pais,' KG'),",
-						"          PAIS = substring(Pais,instr(Pais,' '),instr(Pais,' KG')-instr(Pais,' '))) ~> derivedColumn",
-						"derivedColumn select(mapColumn(",
-						"          Empresas,",
-						"          Frutas,",
-						"          Cliente,",
-						"          {Cantidad (Kg)},",
-						"          {Año},",
-						"          Pais = derivedColumn@PAIS,",
-						"          {Precio(KG)}",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select1",
-						"select1 sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Unpivot',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['Unpivot.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkDataUnpivot"
 					]
 				}
 			},

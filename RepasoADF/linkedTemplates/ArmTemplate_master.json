@@ -212,9 +212,6 @@
 					},
 					"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
 						"value": "[parameters('LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName')]"
-					},
-					"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
-						"value": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]"
 					}
 				}
 			},
@@ -233,6 +230,9 @@
 				"parameters": {
 					"factoryName": {
 						"value": "[parameters('factoryName')]"
+					},
+					"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
+						"value": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]"
 					}
 				}
 			},
