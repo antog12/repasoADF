@@ -1,0 +1,39 @@
+{
+	"name": "Filters",
+	"properties": {
+		"activities": [
+			{
+				"name": "Filter",
+				"type": "Filter",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('FileName')",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@contains(item(),'.txt')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"FileName": {
+				"type": "Array",
+				"defaultValue": [
+					"Employ.txt",
+					"Sales.txt",
+					"Employ.json",
+					"Employ.parquet",
+					"customer.txt"
+				]
+			}
+		},
+		"folder": {
+			"name": "Iteraciones y condicionales"
+		},
+		"annotations": []
+	}
+}
