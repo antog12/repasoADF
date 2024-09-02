@@ -1,0 +1,56 @@
+{
+	"name": "pruebasForEach3",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('animales')",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Set variable1",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "animal",
+								"value": {
+									"value": "@item()",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"animales": {
+				"type": "Array",
+				"defaultValue": [
+					"gato",
+					"perro",
+					"pato"
+				]
+			},
+			"animal": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pruebas"
+		},
+		"annotations": []
+	}
+}
