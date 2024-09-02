@@ -106,10 +106,6 @@
 		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
-		},
-		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
-			"type": "string",
-			"defaultValue": "https://almacenadls.dfs.core.windows.net/"
 		}
 	},
 	"variables": {
@@ -156,6 +152,68 @@
 				},
 				"folder": {
 					"name": "Iteraciones y condicionales"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pruebasForeach')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEach_Pruebas",
+						"type": "ForEach",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@variables('FileNames')",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Set variable1",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "filename",
+										"value": {
+											"value": "@item()",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"FileNames": {
+						"type": "Array",
+						"defaultValue": [
+							"CustomerFile.txt",
+							"ProductFile.txt",
+							"OrderFile.txt"
+						]
+					},
+					"filename": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": []
 			},
@@ -843,29 +901,6 @@
 							"type": "LinkedServiceReference"
 						},
 						"secretName": "ASQL-DB-repaso-ADF"
-					}
-				}
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/LinkedSerevice_KV')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/LinkedServiceADSL_KeyVault')]",
-			"type": "Microsoft.DataFactory/factories/linkedServices",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"annotations": [],
-				"type": "AzureBlobFS",
-				"typeProperties": {
-					"url": "[parameters('LinkedServiceADSL_KeyVault_properties_typeProperties_url')]",
-					"accountKey": {
-						"type": "AzureKeyVaultSecret",
-						"store": {
-							"referenceName": "LinkedSerevice_KV",
-							"type": "LinkedServiceReference"
-						},
-						"secretName": "DataLake-KeyVault"
 					}
 				}
 			},
