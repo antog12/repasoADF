@@ -1,0 +1,56 @@
+{
+	"name": "pruebasForEach4",
+	"properties": {
+		"activities": [
+			{
+				"name": "coches",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@variables('coches')",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "marca",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "marca",
+								"value": {
+									"value": "@item()",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"coches": {
+				"type": "Array",
+				"defaultValue": [
+					"mercedes",
+					"porche",
+					"ferrari"
+				]
+			},
+			"marca": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pruebas"
+		},
+		"annotations": []
+	}
+}
