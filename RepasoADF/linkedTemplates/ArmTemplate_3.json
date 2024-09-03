@@ -931,7 +931,7 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"folderPath": {
-							"value": "@concat('7. General Activities/Get Metadata',dataset().foldername)",
+							"value": "@concat('7. General Activities/Get Metadata/',dataset().foldername)",
 							"type": "Expression"
 						},
 						"fileSystem": "dataset"
