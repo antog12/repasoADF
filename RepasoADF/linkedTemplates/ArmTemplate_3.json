@@ -941,7 +941,7 @@
 			"dependsOn": []
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/ds_target')]",
+			"name": "[concat(parameters('factoryName'), '/ds_master')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
@@ -954,7 +954,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "Pruebas",
+						"folderPath": "7. General Activities/Get Metadata",
 						"fileSystem": "dataset"
 					}
 				}
