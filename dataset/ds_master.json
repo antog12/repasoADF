@@ -1,0 +1,18 @@
+{
+	"name": "ds_master",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceADSL_KeyVault",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "7. General Activities/Get Metadata",
+				"fileSystem": "dataset"
+			}
+		}
+	}
+}
