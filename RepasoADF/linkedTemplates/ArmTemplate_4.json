@@ -122,6 +122,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "Binary",
 				"typeProperties": {
@@ -146,6 +149,9 @@
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "Binary",
 				"typeProperties": {
@@ -166,6 +172,9 @@
 				"linkedServiceName": {
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": [],
 				"type": "Binary",

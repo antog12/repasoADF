@@ -3593,6 +3593,9 @@
 					"referenceName": "AzureSqlDatabaseRepasoADF",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [
@@ -3634,6 +3637,9 @@
 					"referenceName": "AzureSqlDatabaseRepasoADF",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [],
@@ -3654,6 +3660,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureSqlDatabaseRepasoADF",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
@@ -3891,6 +3900,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "Binary",
 				"typeProperties": {
@@ -3917,6 +3929,9 @@
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "Binary",
 				"typeProperties": {
@@ -3939,6 +3954,9 @@
 				"linkedServiceName": {
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": [],
 				"type": "Binary",

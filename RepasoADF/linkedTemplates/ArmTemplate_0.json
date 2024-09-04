@@ -711,6 +711,9 @@
 					"referenceName": "AzureSqlDatabaseRepasoADF",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [
@@ -752,6 +755,9 @@
 					"referenceName": "AzureSqlDatabaseRepasoADF",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [],
@@ -772,6 +778,9 @@
 				"linkedServiceName": {
 					"referenceName": "AzureSqlDatabaseRepasoADF",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
