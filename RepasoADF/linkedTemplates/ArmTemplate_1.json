@@ -29,6 +29,163 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/DestinoPruebaParams')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Linked_Service_ADLS_Origen",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"TableNombre": {
+						"type": "String"
+					}
+				},
+				"folder": {
+					"name": "Move and transform activities"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().TableNombre",
+							"type": "Expression"
+						},
+						"folderPath": "Move and transform activities",
+						"fileSystem": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/adls_Cliente_origen')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "Linked_Service_ADLS_Origen",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Move and transform activities"
+				},
+				"annotations": [],
+				"type": "Excel",
+				"typeProperties": {
+					"sheetName": "Cliente Nuevos",
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Cliente.xlsx",
+						"folderPath": "Move and transform activities",
+						"fileSystem": "dataset"
+					},
+					"firstRowAsHeader": true
+				},
+				"schema": [
+					{
+						"name": "Nombre Empresa",
+						"type": "String"
+					},
+					{
+						"name": "Nombre Cliente",
+						"type": "String"
+					},
+					{
+						"name": "Tipo Cliente",
+						"type": "String"
+					},
+					{
+						"name": "Linea",
+						"type": "String"
+					},
+					{
+						"name": "Nro Celular",
+						"type": "String"
+					},
+					{
+						"name": "Monto",
+						"type": "String"
+					},
+					{
+						"name": "Fecha Contratacion",
+						"type": "String"
+					},
+					{
+						"name": "Tipo Servicio",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/asql_DB_repaso_adf')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"description": "Conexión hacia sql",
+				"linkedServiceName": {
+					"referenceName": "Linked_Service_DB_Origen",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Move and transform activities"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "nombreEmpresa",
+						"type": "varchar"
+					},
+					{
+						"name": "nombreCliente",
+						"type": "varchar"
+					},
+					{
+						"name": "tipoCliente",
+						"type": "varchar"
+					},
+					{
+						"name": "Linea",
+						"type": "varchar"
+					},
+					{
+						"name": "NroCelular",
+						"type": "varchar"
+					},
+					{
+						"name": "Monto",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "fechaContratacion",
+						"type": "date"
+					},
+					{
+						"name": "tipoServicio",
+						"type": "varchar"
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "Cliente"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/sqlpruebasorigen')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1784,242 +1941,6 @@
 						"          ContactoEmergencia,",
 						"          ContactoEmergenciaTelefono",
 						"     )) ~> sinkEmpleado"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Pivot')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceDataExportacion"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkPivot"
-						}
-					],
-					"transformations": [
-						{
-							"name": "pivot"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Empresas as string,",
-						"          Frutas as string,",
-						"          Cliente as string,",
-						"          {Cantidad (Kg)} as short,",
-						"          {Año} as short,",
-						"          Pais as string,",
-						"          {Precio(kg)} as short",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'excel',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Pivot',",
-						"     fileName: 'DataExportacionEstructurado.xlsx',",
-						"     sheetName: 'Data',",
-						"     firstRowAsHeader: true) ~> sourceDataExportacion",
-						"sourceDataExportacion pivot(groupBy(Empresas,",
-						"          Frutas,",
-						"          Cliente,",
-						"          {Cantidad (Kg)},",
-						"          {Año}),",
-						"     pivotBy(Pais),",
-						"     {} = sum({Precio(kg)}),",
-						"     columnNaming: 'Ventas$N_$V(KG)',",
-						"     lateral: true) ~> pivot",
-						"pivot sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Pivot',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['Pivot.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkPivot"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Rank')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_AWDW2",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceProductoCategoria"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkProductoCategoria"
-						}
-					],
-					"transformations": [
-						{
-							"name": "window"
-						},
-						{
-							"name": "rank"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          CategoriaID as integer,",
-						"          Categoria as string,",
-						"          Producto as string,",
-						"          UnitPrice as decimal(19,4),",
-						"          Cantidad as integer,",
-						"          Total as decimal(19,4)",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     store: 'sqlserver',",
-						"     query: '     SELECT PC.ProductCategoryID CategoriaID, PC.Name Categoria, P.Name Producto, OD.UnitPrice, 100 Cantidad,\\n     (OD.UnitPrice*100) Total\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceProductoCategoria",
-						"sourceProductoCategoria window(over(CategoriaID),",
-						"     asc(CategoriaID, true),",
-						"     SUM = toDecimal(sum(UnitPrice*Cantidad)),",
-						"          AVG = toDecimal(avg(UnitPrice*Cantidad)),",
-						"          COUNT = count(UnitPrice*Cantidad),",
-						"          MAX = max(UnitPrice*Cantidad),",
-						"          MIN = min(UnitPrice*Cantidad)) ~> window",
-						"window rank(asc(Total, true),",
-						"     caseInsensitive: true,",
-						"     output(Ranking as long),",
-						"     dense: true) ~> rank",
-						"rank sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Ranking',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['ProductoCategoriaRanking.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkProductoCategoria"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Select')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_AWDW2",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceCategoriaProducto"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkCategriaProducto"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn"
-						},
-						{
-							"name": "select"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Categoria as string,",
-						"          Producto as string,",
-						"          UnitPrice as decimal(19,4),",
-						"          UnitPriceDiscount as decimal(19,4)",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     store: 'sqlserver',",
-						"     query: 'SELECT PC.Name Categoria, P.Name Producto, OD.UnitPrice, OD.UnitPriceDiscount\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceCategoriaProducto",
-						"sourceCategoriaProducto derive(CATEGORIA = upper(Categoria),",
-						"          Producto = upper(Producto),",
-						"          {Monto Total} = toDecimal(UnitPrice-UnitPriceDiscount)) ~> derivedColumn",
-						"derivedColumn select(mapColumn(",
-						"          PRODUCTO = Producto,",
-						"          CATEGORIA = derivedColumn@CATEGORIA,",
-						"          {MONTO TOTAL} = {Monto Total}",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select",
-						"select sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Select',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['CategoriaProductoSelect.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkCategriaProducto"
 					]
 				}
 			},

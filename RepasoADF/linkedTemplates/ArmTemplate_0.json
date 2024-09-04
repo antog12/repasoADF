@@ -703,166 +703,102 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/DestinoPruebaParams')]",
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable2')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
 			"properties": {
 				"linkedServiceName": {
-					"referenceName": "Linked_Service_ADLS_Origen",
+					"referenceName": "AzureSqlDatabaseRepasoADF",
 					"type": "LinkedServiceReference"
-				},
-				"parameters": {
-					"TableNombre": {
-						"type": "String"
-					}
-				},
-				"folder": {
-					"name": "Move and transform activities"
-				},
-				"annotations": [],
-				"type": "DelimitedText",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": {
-							"value": "@dataset().TableNombre",
-							"type": "Expression"
-						},
-						"folderPath": "Move and transform activities",
-						"fileSystem": "dataset"
-					},
-					"columnDelimiter": ",",
-					"escapeChar": "\\",
-					"firstRowAsHeader": true,
-					"quoteChar": "\""
-				},
-				"schema": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_ADLS_Origen')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/adls_Cliente_origen')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "Linked_Service_ADLS_Origen",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "Move and transform activities"
-				},
-				"annotations": [],
-				"type": "Excel",
-				"typeProperties": {
-					"sheetName": "Cliente Nuevos",
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"fileName": "Cliente.xlsx",
-						"folderPath": "Move and transform activities",
-						"fileSystem": "dataset"
-					},
-					"firstRowAsHeader": true
-				},
-				"schema": [
-					{
-						"name": "Nombre Empresa",
-						"type": "String"
-					},
-					{
-						"name": "Nombre Cliente",
-						"type": "String"
-					},
-					{
-						"name": "Tipo Cliente",
-						"type": "String"
-					},
-					{
-						"name": "Linea",
-						"type": "String"
-					},
-					{
-						"name": "Nro Celular",
-						"type": "String"
-					},
-					{
-						"name": "Monto",
-						"type": "String"
-					},
-					{
-						"name": "Fecha Contratacion",
-						"type": "String"
-					},
-					{
-						"name": "Tipo Servicio",
-						"type": "String"
-					}
-				]
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_ADLS_Origen')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/asql_DB_repaso_adf')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"description": "Conexión hacia sql",
-				"linkedServiceName": {
-					"referenceName": "Linked_Service_DB_Origen",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "Move and transform activities"
 				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [
 					{
-						"name": "nombreEmpresa",
-						"type": "varchar"
+						"name": "order_id",
+						"type": "int",
+						"precision": 10
 					},
 					{
-						"name": "nombreCliente",
-						"type": "varchar"
+						"name": "Name",
+						"type": "nvarchar"
 					},
 					{
-						"name": "tipoCliente",
-						"type": "varchar"
+						"name": "LastName",
+						"type": "nvarchar"
 					},
 					{
-						"name": "Linea",
-						"type": "varchar"
-					},
-					{
-						"name": "NroCelular",
-						"type": "varchar"
-					},
-					{
-						"name": "Monto",
-						"type": "money",
-						"precision": 19,
-						"scale": 4
-					},
-					{
-						"name": "fechaContratacion",
-						"type": "date"
-					},
-					{
-						"name": "tipoServicio",
-						"type": "varchar"
+						"name": "inserttime",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
 					}
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "Cliente"
+					"table": "orders"
 				}
 			},
 			"dependsOn": [
-				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_DB_Origen')]"
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseRepasoADF')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable_orders_final')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseRepasoADF",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "orders_final"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseRepasoADF')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlorders_final')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabaseRepasoADF",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "order_id",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "Name",
+						"type": "nvarchar"
+					},
+					{
+						"name": "inserttime",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "orders_final"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureSqlDatabaseRepasoADF')]"
 			]
 		}
 	]
