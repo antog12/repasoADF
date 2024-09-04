@@ -1,0 +1,16 @@
+{
+	"name": "AzureSqlTable_orders_final",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabaseRepasoADF",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "orders_final"
+		}
+	}
+}
