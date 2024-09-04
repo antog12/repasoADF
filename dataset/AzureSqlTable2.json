@@ -5,6 +5,9 @@
 			"referenceName": "AzureSqlDatabaseRepasoADF",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "Pruebas"
+		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [

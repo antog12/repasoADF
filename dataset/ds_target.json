@@ -5,6 +5,9 @@
 			"referenceName": "LinkedServiceADSL_KeyVault",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "Pruebas"
+		},
 		"annotations": [],
 		"type": "Binary",
 		"typeProperties": {
