@@ -26,7 +26,8 @@
 			],
 			"transformations": [
 				{
-					"name": "alterRow1"
+					"name": "alterRow1",
+					"description": "Cuando usas 1==1 en un Alter Row con la política de upsert, estás indicando que todas las filas deben ser consideradas para la operación de upsert (actualizar o insertar). En otras palabras, cada fila en tu flujo de datos será evaluada para ver si debe ser actualizada o insertada en la base de datos, sin importar su contenido1."
 				}
 			],
 			"scriptLines": [
