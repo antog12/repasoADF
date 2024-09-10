@@ -1,0 +1,70 @@
+{
+	"name": "pruebaSwitch",
+	"properties": {
+		"activities": [
+			{
+				"name": "SwitchDemo",
+				"type": "Switch",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"on": {
+						"value": "@pipeline().parameters.Pfile",
+						"type": "Expression"
+					},
+					"cases": [
+						{
+							"value": "customer",
+							"activities": [
+								{
+									"name": "WaitCustomer",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 1
+									}
+								}
+							]
+						},
+						{
+							"value": "product",
+							"activities": [
+								{
+									"name": "WaitProduct",
+									"type": "Wait",
+									"dependsOn": [],
+									"userProperties": [],
+									"typeProperties": {
+										"waitTimeInSeconds": 1
+									}
+								}
+							]
+						}
+					],
+					"defaultActivities": [
+						{
+							"name": "On default delete file",
+							"type": "Wait",
+							"dependsOn": [],
+							"userProperties": [],
+							"typeProperties": {
+								"waitTimeInSeconds": 1
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"Pfile": {
+				"type": "string",
+				"defaultValue": "product"
+			}
+		},
+		"folder": {
+			"name": "Pruebas"
+		},
+		"annotations": []
+	}
+}
