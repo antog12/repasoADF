@@ -10,6 +10,9 @@
 				"type": "string"
 			}
 		},
+		"folder": {
+			"name": "Proyectos"
+		},
 		"annotations": [],
 		"type": "DelimitedText",
 		"typeProperties": {

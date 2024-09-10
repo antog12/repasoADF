@@ -1,0 +1,19 @@
+{
+	"name": "Json_target",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceADSL_KeyVault",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "Json",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": "Pruebas/Target",
+				"fileSystem": "dataset"
+			}
+		},
+		"schema": {}
+	}
+}
