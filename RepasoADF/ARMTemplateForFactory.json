@@ -3986,6 +3986,158 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/pruebaSwitch2')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Switch1",
+						"type": "Switch",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"on": {
+								"value": "@pipeline().parameters.FolderName",
+								"type": "Expression"
+							},
+							"cases": [
+								{
+									"value": "output1",
+									"activities": [
+										{
+											"name": "Copy data1",
+											"type": "Copy",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "0.12:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"source": {
+													"type": "BinarySource",
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": true
+													},
+													"formatSettings": {
+														"type": "BinaryReadSettings"
+													}
+												},
+												"sink": {
+													"type": "BinarySink",
+													"storeSettings": {
+														"type": "AzureBlobFSWriteSettings"
+													}
+												},
+												"enableStaging": false
+											},
+											"inputs": [
+												{
+													"referenceName": "InputDataSet",
+													"type": "DatasetReference",
+													"parameters": {}
+												}
+											],
+											"outputs": [
+												{
+													"referenceName": "outputLocationDS",
+													"type": "DatasetReference",
+													"parameters": {
+														"folder": {
+															"value": "@pipeline().parameters.FolderName",
+															"type": "Expression"
+														}
+													}
+												}
+											]
+										}
+									]
+								},
+								{
+									"value": "output2",
+									"activities": [
+										{
+											"name": "Copy data2",
+											"type": "Copy",
+											"dependsOn": [],
+											"policy": {
+												"timeout": "0.12:00:00",
+												"retry": 0,
+												"retryIntervalInSeconds": 30,
+												"secureOutput": false,
+												"secureInput": false
+											},
+											"userProperties": [],
+											"typeProperties": {
+												"source": {
+													"type": "BinarySource",
+													"storeSettings": {
+														"type": "AzureBlobFSReadSettings",
+														"recursive": true
+													},
+													"formatSettings": {
+														"type": "BinaryReadSettings"
+													}
+												},
+												"sink": {
+													"type": "BinarySink",
+													"storeSettings": {
+														"type": "AzureBlobFSWriteSettings"
+													}
+												},
+												"enableStaging": false
+											},
+											"inputs": [
+												{
+													"referenceName": "InputDataSet",
+													"type": "DatasetReference",
+													"parameters": {}
+												}
+											],
+											"outputs": [
+												{
+													"referenceName": "outputLocationDS",
+													"type": "DatasetReference",
+													"parameters": {
+														"folder": {
+															"value": "@pipeline().parameters.FolderName",
+															"type": "Expression"
+														}
+													}
+												}
+											]
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"FolderName": {
+						"type": "string",
+						"defaultValue": "output1"
+					}
+				},
+				"folder": {
+					"name": "Pruebas"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/InputDataSet')]",
+				"[concat(variables('factoryId'), '/datasets/outputLocationDS')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/pruebaforEach2')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -4941,6 +5093,9 @@
 					"referenceName": "LinkedSeevice_DB_repaso_ADF_KV",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Proyectos"
+				},
 				"annotations": [],
 				"type": "AzureSqlTable",
 				"schema": [
@@ -5175,6 +5330,9 @@
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Proyectos"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -5260,6 +5418,9 @@
 						"type": "string"
 					}
 				},
+				"folder": {
+					"name": "Proyectos"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -5324,6 +5485,33 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/Linked_Service_ADLS_Origen')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/InputDataSet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceADSL_KeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Pruebas"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "Cars.csv",
+						"folderPath": "Pruebas/Source",
+						"fileSystem": "dataset"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedServiceADSL_KeyVault')]"
 			]
 		},
 		{
@@ -5527,6 +5715,40 @@
 					"location": {
 						"type": "AzureBlobFSLocation",
 						"folderPath": "Pruebas",
+						"fileSystem": "dataset"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedServiceADSL_KeyVault')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/outputLocationDS')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceADSL_KeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"folder": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Pruebas"
+				},
+				"annotations": [],
+				"type": "Binary",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().folder",
+							"type": "Expression"
+						},
 						"fileSystem": "dataset"
 					}
 				}
