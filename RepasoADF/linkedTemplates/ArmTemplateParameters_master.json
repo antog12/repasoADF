@@ -17,6 +17,9 @@
 		"LinkedService_BlobStorage_connectionString": {
 			"value": ""
 		},
+		"LinkedService_sales_sales_password": {
+			"value": ""
+		},
 		"LinkedSevice_ASQL_AWDW2_connectionString": {
 			"value": ""
 		},
@@ -61,6 +64,15 @@
 		},
 		"LinkedServiceADSL_KeyVault_properties_typeProperties_url": {
 			"value": "https://almacenadls.dfs.core.windows.net/"
+		},
+		"LinkedService_sales_sales_properties_typeProperties_server": {
+			"value": "DESKTOP-KMFLPL4"
+		},
+		"LinkedService_sales_sales_properties_typeProperties_database": {
+			"value": "sales"
+		},
+		"LinkedService_sales_sales_properties_typeProperties_userName": {
+			"value": "sa"
 		},
 		"Linked_Service_ADLS_Origen_properties_typeProperties_url": {
 			"value": "https://almacenadls.dfs.core.windows.net/"
