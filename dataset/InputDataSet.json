@@ -1,0 +1,22 @@
+{
+	"name": "InputDataSet",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceADSL_KeyVault",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Pruebas"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": "Cars.csv",
+				"folderPath": "Pruebas/Source",
+				"fileSystem": "dataset"
+			}
+		}
+	}
+}

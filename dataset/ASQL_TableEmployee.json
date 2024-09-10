@@ -5,6 +5,9 @@
 			"referenceName": "LinkedSeevice_DB_repaso_ADF_KV",
 			"type": "LinkedServiceReference"
 		},
+		"folder": {
+			"name": "Proyectos"
+		},
 		"annotations": [],
 		"type": "AzureSqlTable",
 		"schema": [
