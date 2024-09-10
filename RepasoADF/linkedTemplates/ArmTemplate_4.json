@@ -573,6 +573,9 @@
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -676,6 +679,9 @@
 				"linkedServiceName": {
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Proyectos"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
