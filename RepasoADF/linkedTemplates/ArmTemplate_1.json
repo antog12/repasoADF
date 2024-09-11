@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"password\"de \"LinkedService_sales_sales\""
 		},
+		"SqlServer1_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"SqlServer1\""
+		},
 		"LinkedSeevice_DB_repaso_ADF_KV_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "antog12server.database.windows.net"
@@ -36,6 +40,18 @@
 			"defaultValue": "sales"
 		},
 		"LinkedService_sales_sales_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sa"
+		},
+		"SqlServer1_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "DESKTOP-KMFLPL4"
+		},
+		"SqlServer1_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "Pruebas"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "sa"
 		}
@@ -492,6 +508,32 @@
 					"password": {
 						"type": "SecureString",
 						"value": "[parameters('LinkedService_sales_sales_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "Self-Hosted-IR",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SqlServer1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "SqlServer",
+				"typeProperties": {
+					"server": "[parameters('SqlServer1_properties_typeProperties_server')]",
+					"database": "[parameters('SqlServer1_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('SqlServer1_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('SqlServer1_password')]"
 					}
 				},
 				"connectVia": {
@@ -1495,184 +1537,6 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sinkJsonDestino"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Join')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceProducto"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceSubcategoriaProducto"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkProductInnerjoin"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkProductLeftJoin"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkProductRightJoin"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkFullJoin"
-						}
-					],
-					"transformations": [
-						{
-							"name": "InnerJoin"
-						},
-						{
-							"name": "LeftOuterJoin"
-						},
-						{
-							"name": "RightOuterJoin"
-						},
-						{
-							"name": "FullJoin"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ProductoId as short,",
-						"          NombreProducto as string,",
-						"          ProductoSubCategoriaId as short,",
-						"          Descripcion as string,",
-						"          Categoria as string,",
-						"          Color as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'excel',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Join',",
-						"     fileName: 'Producto.xlsx',",
-						"     sheetName: 'Producto',",
-						"     firstRowAsHeader: true) ~> sourceProducto",
-						"source(output(",
-						"          SubCategoriaProductoId as short,",
-						"          NombreSubCategoria as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'excel',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Join',",
-						"     fileName: 'SubCategoriaProducto.xlsx',",
-						"     sheetName: 'SubCategoriaProducto',",
-						"     firstRowAsHeader: true) ~> sourceSubcategoriaProducto",
-						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
-						"     joinType:'inner',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> InnerJoin",
-						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
-						"     joinType:'left',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> LeftOuterJoin",
-						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
-						"     joinType:'right',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> RightOuterJoin",
-						"sourceProducto, sourceSubcategoriaProducto join(ProductoSubCategoriaId == SubCategoriaProductoId,",
-						"     joinType:'outer',",
-						"     matchType:'exact',",
-						"     ignoreSpaces: false,",
-						"     broadcast: 'auto')~> FullJoin",
-						"InnerJoin sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Join',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['ProductInnerJoin.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkProductInnerjoin",
-						"LeftOuterJoin sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Join',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['ProductLeftJoin.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkProductLeftJoin",
-						"RightOuterJoin sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Join',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['ProductRightJoin.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkProductRightJoin",
-						"FullJoin sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Join',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['ProductFullJoin.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkFullJoin"
 					]
 				}
 			},

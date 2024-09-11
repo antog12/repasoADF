@@ -29,6 +29,9 @@
 		"Linked_Service_DB_Origen_password": {
 			"value": ""
 		},
+		"SqlServer1_password": {
+			"value": ""
+		},
 		"linkedService_asql_aw_password": {
 			"value": ""
 		},
@@ -85,6 +88,15 @@
 		},
 		"Linked_Service_DB_Origen_properties_typeProperties_userName": {
 			"value": "antog12"
+		},
+		"SqlServer1_properties_typeProperties_server": {
+			"value": "DESKTOP-KMFLPL4"
+		},
+		"SqlServer1_properties_typeProperties_database": {
+			"value": "Pruebas"
+		},
+		"SqlServer1_properties_typeProperties_userName": {
+			"value": "sa"
 		},
 		"linkedService_asql_aw_properties_typeProperties_server": {
 			"value": "antog12server.database.windows.net"
