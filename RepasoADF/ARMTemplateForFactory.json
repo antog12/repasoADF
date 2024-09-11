@@ -5982,8 +5982,7 @@
 				"typeProperties": {
 					"location": {
 						"type": "AzureBlobFSLocation",
-						"folderPath": "raw",
-						"fileSystem": "dataset"
+						"fileSystem": "raw"
 					},
 					"columnDelimiter": ",",
 					"escapeChar": "\\",
