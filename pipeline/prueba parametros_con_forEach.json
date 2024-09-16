@@ -1,0 +1,168 @@
+{
+	"name": "prueba parametros_con_forEach",
+	"properties": {
+		"activities": [
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@pipeline().parameters.fecha",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Get Data",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Set anio",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								},
+								{
+									"activity": "Set mes",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "origenconParam",
+									"type": "DatasetReference",
+									"parameters": {
+										"container": "dataset",
+										"folder": {
+											"value": "@concat(variables('anio'),'/',variables('mes'))",
+											"type": "Expression"
+										},
+										"file": {
+											"value": "@concat('datos_',variables('anio'),variables('mes'),'.csv')",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "origenconParam",
+									"type": "DatasetReference",
+									"parameters": {
+										"container": "facturacion",
+										"folder": "@concat(variables('anio'),'/',variables('mes'))",
+										"file": {
+											"value": "@concat('datos_Facturacion',variables('anio'),variables('mes'),'.csv')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "Set anio",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "anio",
+								"value": {
+									"value": "@substring(string(item()),0,4)",
+									"type": "Expression"
+								}
+							}
+						},
+						{
+							"name": "Set mes",
+							"type": "SetVariable",
+							"dependsOn": [],
+							"policy": {
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"variableName": "mes",
+								"value": {
+									"value": "@substring(string(item()),4,2)",
+									"type": "Expression"
+								}
+							}
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"fecha": {
+				"type": "array",
+				"defaultValue": [
+					20231001,
+					20231101,
+					20231201
+				]
+			}
+		},
+		"variables": {
+			"anio": {
+				"type": "String"
+			},
+			"mes": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Pruebas"
+		},
+		"annotations": []
+	}
+}
