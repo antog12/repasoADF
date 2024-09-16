@@ -4493,7 +4493,7 @@
 										"type": "Expression"
 									},
 									"file": {
-										"value": "@concat('CUSTOMER_',variables('anio'),variables('mes'),'.csv')",
+										"value": "@concat('datos_',variables('anio'),variables('mes'),'.csv')",
 										"type": "Expression"
 									}
 								}
@@ -4504,10 +4504,10 @@
 								"referenceName": "origenconParam",
 								"type": "DatasetReference",
 								"parameters": {
-									"container": "Parametros",
+									"container": "facturacion",
 									"folder": "@concat(variables('anio'),'/',variables('mes'))",
 									"file": {
-										"value": "@concat('CUSTOMER_Param',variables('anio'),variables('mes'),'.csv')",
+										"value": "@concat('datos_Facturacion',variables('anio'),variables('mes'),'.csv')",
 										"type": "Expression"
 									}
 								}
@@ -4555,7 +4555,7 @@
 				"parameters": {
 					"fecha": {
 						"type": "string",
-						"defaultValue": "20240701"
+						"defaultValue": "20231201"
 					}
 				},
 				"variables": {
