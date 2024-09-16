@@ -3227,6 +3227,68 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/flujo de datos dinamico')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "dataflow1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {
+										"table": "Ventas"
+									},
+									"sink1": {
+										"container": "dataset",
+										"folder": "Pruebas",
+										"file": "datos"
+									}
+								},
+								"linkedServiceParameters": {
+									"source1": {
+										"schemaLinkedService": {
+											"table": "Ventas"
+										}
+									}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Pruebas"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/dataflow1')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/foreach-EXCEL')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -6531,6 +6593,39 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText4')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceADSL_KeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": "Pruebas/Target",
+						"fileSystem": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "PK\u0003\u0004\u0014\u0000\u0006\u0000\b\u0000\u0000\u0000!\u0000�S��N\u0001\u0000\u0000\b\u0004\u0000\u0000\u0013\u0000\u0000\u0000[Content_Types].xml���N�0\u0010E�H�C�-�ݲ@\b5��\u0012�(\u001f`�Ib�/y���=\u0013��@�\u0015j7�b��s=3��6�\u0014k����ؘ�X\u0001��J��b����\u0015��S�x\u0007\u0015�\u0002����f��\u0006���\u001dV�K)<\t�u\u0007V\"�\u0001\u001c�4>Z��7�\"�z)[\u0010��у��K�R�z",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LinkedServiceADSL_KeyVault')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DestinoPruebaParams')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -6899,6 +6994,12 @@
 					"referenceName": "Linked_Service_DB_Origen",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"table": {
+						"type": "string",
+						"defaultValue": "Ventas"
+					}
+				},
 				"folder": {
 					"name": "Move and transform activities"
 				},
@@ -6942,7 +7043,10 @@
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "Cliente"
+					"table": {
+						"value": "@dataset().table",
+						"type": "Expression"
+					}
 				}
 			},
 			"dependsOn": [
@@ -10089,6 +10193,75 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_AWDW2')]",
 				"[concat(variables('factoryId'), '/linkedServices/LinkedService_BlobStorage')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/dataflow1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "asql_DB_repaso_adf",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "origenconParam",
+								"type": "DatasetReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          VentasID as integer,",
+						"          Nombre as string,",
+						"          Apellido as string,",
+						"          dni as string,",
+						"          fechaPedido as date,",
+						"          producto as string,",
+						"          NumeroOrden as string,",
+						"          precioUnitario as float,",
+						"          Cantidad as integer,",
+						"          Total as float",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     isolationLevel: 'READ_UNCOMMITTED',",
+						"     format: 'table') ~> source1",
+						"source1 aggregate(groupBy(producto),",
+						"     contador = count()) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     input(",
+						"          {ProductID|Name|ProductNumber|Color|StandardCost|ListPrice|Size|Weight|ProductCategoryID|ProductModelID|SellStartDate|SellEndDate|DiscontinuedDate|ThumbNailPhoto|ThumbnailPhotoFileName|rowguid|ModifiedDate} as string",
+						"     ),",
+						"     partitionFileNames:['datos_agrupados.csv'],",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]",
+				"[concat(variables('factoryId'), '/datasets/origenconParam')]"
 			]
 		}
 	]

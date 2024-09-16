@@ -271,6 +271,12 @@
 					"referenceName": "Linked_Service_DB_Origen",
 					"type": "LinkedServiceReference"
 				},
+				"parameters": {
+					"table": {
+						"type": "string",
+						"defaultValue": "Ventas"
+					}
+				},
 				"folder": {
 					"name": "Move and transform activities"
 				},
@@ -314,7 +320,10 @@
 				],
 				"typeProperties": {
 					"schema": "dbo",
-					"table": "Cliente"
+					"table": {
+						"value": "@dataset().table",
+						"type": "Expression"
+					}
 				}
 			},
 			"dependsOn": []
