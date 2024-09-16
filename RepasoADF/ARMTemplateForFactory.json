@@ -6508,6 +6508,9 @@
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "DelimitedText",
 				"typeProperties": {
@@ -6575,6 +6578,9 @@
 				"linkedServiceName": {
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -6742,6 +6748,9 @@
 					"referenceName": "SqlServer1",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "SqlServerTable",
 				"schema": [
@@ -6794,6 +6803,9 @@
 				"linkedServiceName": {
 					"referenceName": "LinkedServiceADSL_KeyVault",
 					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
@@ -7042,6 +7054,9 @@
 					"file": {
 						"type": "string"
 					}
+				},
+				"folder": {
+					"name": "Pruebas"
 				},
 				"annotations": [],
 				"type": "DelimitedText",
