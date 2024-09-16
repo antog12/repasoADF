@@ -2651,13 +2651,6 @@
 										"folder": "Pruebas",
 										"file": "datos"
 									}
-								},
-								"linkedServiceParameters": {
-									"source1": {
-										"schemaLinkedService": {
-											"table": "Ventas"
-										}
-									}
 								}
 							},
 							"staging": {},
