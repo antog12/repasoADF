@@ -1,5 +1,5 @@
 {
-	"name": "prueba parametros_con_forEach",
+	"name": "Copia de archvos en base al dia",
 	"properties": {
 		"activities": [
 			{
@@ -203,7 +203,7 @@
 			}
 		},
 		"folder": {
-			"name": "Pruebas"
+			"name": "Proyectos"
 		},
 		"annotations": []
 	}
