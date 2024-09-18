@@ -1,0 +1,84 @@
+{
+	"name": "Consumo de APIs con Azure Data Factory",
+	"properties": {
+		"activities": [
+			{
+				"name": "Api Rest",
+				"type": "WebActivity",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": "https://pokeapi.co/api/v2/pokemon/ditto"
+				}
+			},
+			{
+				"name": "Set nombre",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Api Rest",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "nombre",
+					"value": {
+						"value": "@activity('Api Rest').output.name",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "Set movimientos",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "Api Rest",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "movimientos",
+					"value": {
+						"value": "@length(activity('Api Rest').output.moves)",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"nombre": {
+				"type": "String"
+			},
+			"movimientos": {
+				"type": "Integer"
+			}
+		},
+		"folder": {
+			"name": "Proyectos"
+		},
+		"annotations": []
+	}
+}
