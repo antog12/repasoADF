@@ -471,6 +471,224 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/Copia de archvos en base al dia')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "ForEach1",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Reproceso",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@variables('fecha')",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Get Data",
+									"type": "Copy",
+									"dependsOn": [
+										{
+											"activity": "Set anio",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										},
+										{
+											"activity": "Set mes",
+											"dependencyConditions": [
+												"Succeeded"
+											]
+										}
+									],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "AzureBlobFSReadSettings",
+												"recursive": true,
+												"enablePartitionDiscovery": false
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "origenconParam",
+											"type": "DatasetReference",
+											"parameters": {
+												"container": "dataset",
+												"folder": {
+													"value": "@concat(variables('anio'),'/',variables('mes'))",
+													"type": "Expression"
+												},
+												"file": {
+													"value": "@concat('datos_',variables('anio'),variables('mes'),'.csv')",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "origenconParam",
+											"type": "DatasetReference",
+											"parameters": {
+												"container": "facturacion",
+												"folder": "@concat(variables('anio'),'/',variables('mes'))",
+												"file": {
+													"value": "@concat('datos_Facturacion',variables('anio'),variables('mes'),'.csv')",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								},
+								{
+									"name": "Set anio",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "anio",
+										"value": {
+											"value": "@substring(string(item()),0,4)",
+											"type": "Expression"
+										}
+									}
+								},
+								{
+									"name": "Set mes",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "mes",
+										"value": {
+											"value": "@substring(string(item()),4,2)",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					},
+					{
+						"name": "Reproceso",
+						"type": "IfCondition",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(pipeline().parameters.Reproceso,'1')",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Set Fecha",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "fecha",
+										"value": {
+											"value": "@array(formatDateTime(utcNow(),'yyyyMMdd'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"Reproceso": {
+						"type": "string",
+						"defaultValue": "0"
+					}
+				},
+				"variables": {
+					"anio": {
+						"type": "String"
+					},
+					"mes": {
+						"type": "String"
+					},
+					"fecha": {
+						"type": "Array",
+						"defaultValue": [
+							20231001,
+							20231101,
+							20231201
+						]
+					}
+				},
+				"folder": {
+					"name": "Proyectos"
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/origenconParam')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Delete')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -4639,11 +4857,18 @@
 					{
 						"name": "ForEach1",
 						"type": "ForEach",
-						"dependsOn": [],
+						"dependsOn": [
+							{
+								"activity": "Reproceso",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
 						"userProperties": [],
 						"typeProperties": {
 							"items": {
-								"value": "@pipeline().parameters.fecha",
+								"value": "@variables('fecha')",
 								"type": "Expression"
 							},
 							"isSequential": true,
@@ -4774,19 +4999,46 @@
 								}
 							]
 						}
+					},
+					{
+						"name": "Reproceso",
+						"type": "IfCondition",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"expression": {
+								"value": "@equals(pipeline().parameters.Reproceso,'1')",
+								"type": "Expression"
+							},
+							"ifFalseActivities": [
+								{
+									"name": "Set Fecha",
+									"type": "SetVariable",
+									"dependsOn": [],
+									"policy": {
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"variableName": "fecha",
+										"value": {
+											"value": "@array(formatDateTime(utcNow(),'yyyyMMdd'))",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
 					}
 				],
 				"policy": {
 					"elapsedTimeMetric": {}
 				},
 				"parameters": {
-					"fecha": {
-						"type": "array",
-						"defaultValue": [
-							20231001,
-							20231101,
-							20231201
-						]
+					"Reproceso": {
+						"type": "string",
+						"defaultValue": "0"
 					}
 				},
 				"variables": {
@@ -4795,6 +5047,14 @@
 					},
 					"mes": {
 						"type": "String"
+					},
+					"fecha": {
+						"type": "Array",
+						"defaultValue": [
+							20231001,
+							20231101,
+							20231201
+						]
 					}
 				},
 				"folder": {
