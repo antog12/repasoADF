@@ -1,6 +1,7 @@
 {
 	"name": "Copia de archvos en base al dia",
 	"properties": {
+		"description": "los valorea a reprocesar se harán manualmente. (1), los que no lo són, se haran en base al día(0)",
 		"activities": [
 			{
 				"name": "ForEach1",
