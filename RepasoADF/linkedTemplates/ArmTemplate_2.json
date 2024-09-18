@@ -13,6 +13,259 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Exists')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceCliente"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceServicio"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkClienteExiste"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkclienteNoExist"
+						}
+					],
+					"transformations": [
+						{
+							"name": "existsCliente",
+							"description": "Vamos a ver si el cliente existe en la tabla servicio. hacemos la comparación."
+						},
+						{
+							"name": "NotExist",
+							"description": "Vamos a vert si el cliente no existe en la tabla servicio"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CodCliente as short,",
+						"          Cliente as string,",
+						"          ApePatern as string,",
+						"          FechaNaci as string,",
+						"          DNI as integer,",
+						"          IdServicio as short",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Exist',",
+						"     fileName: 'Cliente.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceCliente",
+						"source(output(",
+						"          IdServicio as short,",
+						"          Servicio as string,",
+						"          Fecha as date 'dd/MM/yyyy',",
+						"          MontoPagar as short",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Exist',",
+						"     fileName: 'Servicios.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceServicio",
+						"sourceCliente, sourceServicio exists(sourceCliente@IdServicio == sourceServicio@IdServicio,",
+						"     negate:false,",
+						"     broadcast: 'auto')~> existsCliente",
+						"sourceCliente, sourceServicio exists(sourceCliente@IdServicio == sourceServicio@IdServicio,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> NotExist",
+						"existsCliente sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Exist',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ClienteExists.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkClienteExiste",
+						"NotExist sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Exist',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['ClienteNotExit.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkclienteNoExist"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Filter')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceEmpleado"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabaseRepasoADF",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkEmpleado"
+						}
+					],
+					"transformations": [
+						{
+							"name": "parseNombre",
+							"description": "Vamos a trabajar con la columna de nombre"
+						},
+						{
+							"name": "parseJson"
+						},
+						{
+							"name": "parseXML"
+						},
+						{
+							"name": "select"
+						},
+						{
+							"name": "filter"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ID as short,",
+						"          Nombre as string,",
+						"          JsonValue as string,",
+						"          XmlValue as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'excel',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Parse',",
+						"     fileName: 'Empleado.xlsx',",
+						"     sheetName: 'Data',",
+						"     firstRowAsHeader: true) ~> sourceEmpleado",
+						"sourceEmpleado parse(NombreOutPut = Nombre ? (Nombre as string,",
+						"          Apellido as string),",
+						"     format: 'delimited',",
+						"     columnNamesAsHeader: false,",
+						"     columnDelimiter: '|',",
+						"     nullValue: '') ~> parseNombre",
+						"parseNombre parse(JsonOutPut = JsonValue ? (Cargo as string,",
+						"          FechaContratacion as date,",
+						"          FechaCumpleanio as date),",
+						"     format: 'json',",
+						"     documentForm: 'singleDocument') ~> parseJson",
+						"parseJson parse(XmlOutPut = XmlValue ? (Empleado as (Email as string,",
+						"          Telefono as string,",
+						"          ContactoEmergencia as string,",
+						"          ContactoEmergenciaTelefono as string)),",
+						"     format: 'xml',",
+						"     namespaces: true) ~> parseXML",
+						"parseXML select(mapColumn(",
+						"          ID,",
+						"          Nombre = NombreOutPut.Nombre,",
+						"          Apellido = NombreOutPut.Apellido,",
+						"          Cargo = JsonOutPut.Cargo,",
+						"          FechaContratacion = JsonOutPut.FechaContratacion,",
+						"          FechaCumpleanio = JsonOutPut.FechaCumpleanio,",
+						"          Email = XmlOutPut.Empleado.Email,",
+						"          Telefono = XmlOutPut.Empleado.Telefono,",
+						"          ContactoEmergencia = XmlOutPut.Empleado.ContactoEmergencia,",
+						"          ContactoEmergenciaTelefono = XmlOutPut.Empleado.ContactoEmergenciaTelefono",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select",
+						"select filter(year(FechaContratacion)>2007) ~> filter",
+						"filter sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'Empleado',",
+						"     preSQLs:['truncate table dbo.empleado'],",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ID,",
+						"          Nombre,",
+						"          Apellido,",
+						"          Cargo,",
+						"          FechaContratacion,",
+						"          FechaCumpleanio,",
+						"          Email,",
+						"          Telefono,",
+						"          ContactoEmergencia,",
+						"          ContactoEmergenciaTelefono",
+						"     )) ~> sinkEmpleado"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Flatten')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1817,102 +2070,6 @@
 									"sinkProductBlue": {},
 									"sinkProductBlack": {},
 									"sinkproductotros": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Derived Column')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flowDerived Column",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Derived Column",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceCategoriaProducto": {},
-									"sinkCategriaProducto": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Exits')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flowExists",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Exists",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceCliente": {},
-									"sourceServicio": {},
-									"sinkClienteExiste": {},
-									"sinkclienteNoExist": {}
 								}
 							},
 							"staging": {},

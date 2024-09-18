@@ -89,6 +89,9 @@
 		"Linked_Service_DB_Origen_properties_typeProperties_userName": {
 			"value": "antog12"
 		},
+		"RestService1_properties_typeProperties_url": {
+			"value": "https://pokeapi.co/api/v2/pokemon/ditto"
+		},
 		"SqlServer1_properties_typeProperties_server": {
 			"value": "DESKTOP-KMFLPL4"
 		},
