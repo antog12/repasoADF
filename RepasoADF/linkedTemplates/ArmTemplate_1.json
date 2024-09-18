@@ -61,6 +61,28 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable1')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedService_AWDW2",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "DataFlow"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": "Customer"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlTable2')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -1384,168 +1406,6 @@
 						"          ContactoEmergencia,",
 						"          ContactoEmergenciaTelefono",
 						"     )) ~> sinkEmpleado"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Flatten')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceFlattenPorLinea"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceFlattenUnico"
-						},
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceFlattenArray"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzureSqlDatabaseRepasoADF",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkJsonDestino"
-						}
-					],
-					"transformations": [
-						{
-							"name": "flattenArrayColor",
-							"description": "Se usa com matrices(Arrays)"
-						},
-						{
-							"name": "flattenModeloArray"
-						},
-						{
-							"name": "unionJsonLineaUnico"
-						},
-						{
-							"name": "selectJson"
-						},
-						{
-							"name": "unionJsonfinal"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Color as string,",
-						"          Contacto as (Email as string, Telefono as string),",
-						"          Empresa as string,",
-						"          Id as string,",
-						"          Modelo as string",
-						"     ),",
-						"     useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'json',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Flatten',",
-						"     fileName: 'AutomovilDocumentoPorLinea.json',",
-						"     documentForm: 'documentPerLine') ~> sourceFlattenPorLinea",
-						"source(output(",
-						"          Color as string,",
-						"          Contacto as (Email as string, Telefono as string),",
-						"          Empresa as string,",
-						"          Id as string,",
-						"          Modelo as string",
-						"     ),",
-						"     useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'json',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Flatten',",
-						"     fileName: 'AutomovilDocumentoUnico.json',",
-						"     documentForm: 'singleDocument') ~> sourceFlattenUnico",
-						"source(output(",
-						"          Color as string[],",
-						"          Contacto as (Email as string, Telefono as string),",
-						"          Empresa as string,",
-						"          Id as string,",
-						"          Modelo as string[]",
-						"     ),",
-						"     useSchema: false,",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'json',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Flatten',",
-						"     fileName: 'AutomovilMatriz.json',",
-						"     documentForm: 'arrayOfDocuments') ~> sourceFlattenArray",
-						"sourceFlattenArray foldDown(unroll(Color, Color),",
-						"     mapColumn(",
-						"          Color,",
-						"          Email = Contacto.Email,",
-						"          Telefono = Contacto.Telefono,",
-						"          Empresa,",
-						"          Id,",
-						"          Modelo",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> flattenArrayColor",
-						"flattenArrayColor foldDown(unroll(Modelo, Modelo),",
-						"     mapColumn(",
-						"          Color,",
-						"          Email,",
-						"          Telefono,",
-						"          Empresa,",
-						"          Id,",
-						"          Modelo",
-						"     ),",
-						"     skipDuplicateMapInputs: false,",
-						"     skipDuplicateMapOutputs: false) ~> flattenModeloArray",
-						"sourceFlattenPorLinea, sourceFlattenUnico union(byName: true)~> unionJsonLineaUnico",
-						"unionJsonLineaUnico select(mapColumn(",
-						"          Color,",
-						"          Email = Contacto.Email,",
-						"          Telefono = Contacto.Telefono,",
-						"          Empresa,",
-						"          Id,",
-						"          Modelo",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> selectJson",
-						"selectJson, flattenModeloArray union(byName: true)~> unionJsonfinal",
-						"unionJsonfinal sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     store: 'sqlserver',",
-						"     schemaName: 'dbo',",
-						"     tableName: 'Automovil',",
-						"     preSQLs:['truncate table dbo.Automovil'],",
-						"     insertable: true,",
-						"     updateable: false,",
-						"     deletable: false,",
-						"     upsertable: false,",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sinkJsonDestino"
 					]
 				}
 			},
