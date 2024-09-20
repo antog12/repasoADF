@@ -1,5 +1,5 @@
 {
-	"name": "copy data Ds parametrizado",
+	"name": "Filtra_archivos_y_usa_los_caracteres_comodin",
 	"properties": {
 		"activities": [
 			{
@@ -20,6 +20,8 @@
 						"storeSettings": {
 							"type": "AzureBlobFSReadSettings",
 							"recursive": true,
+							"wildcardFolderPath": "Pruebas",
+							"wildcardFileName": "2883_*.csv",
 							"enablePartitionDiscovery": false
 						},
 						"formatSettings": {
@@ -54,7 +56,7 @@
 						"parameters": {
 							"container": "dataset",
 							"folder": "Pruebas",
-							"file": "2883.csv"
+							"file": "/"
 						}
 					}
 				],
@@ -64,7 +66,7 @@
 						"type": "DatasetReference",
 						"parameters": {
 							"container": "facturacion",
-							"folder": "2024"
+							"folder": "/"
 						}
 					}
 				]
