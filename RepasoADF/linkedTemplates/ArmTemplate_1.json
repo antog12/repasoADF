@@ -334,6 +334,9 @@
 					"referenceName": "RestService1",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "RestResource",
 				"typeProperties": {},
