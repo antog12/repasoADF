@@ -1,0 +1,33 @@
+{
+	"name": "Dataset_parametrizado_SQL_origen",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedSeevice_DB_repaso_ADF_KV",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"Schema": {
+				"type": "string"
+			},
+			"Table": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Pruebas"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().Schema",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().Table",
+				"type": "Expression"
+			}
+		}
+	}
+}
