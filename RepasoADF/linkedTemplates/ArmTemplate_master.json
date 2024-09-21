@@ -123,6 +123,10 @@
 			"type": "string",
 			"defaultValue": "https://pokeapi.co/api/v2/pokemon/ditto"
 		},
+		"RestService2_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://reqres.in/api/users"
+		},
 		"SqlServer1_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "DESKTOP-KMFLPL4"
@@ -233,6 +237,9 @@
 					},
 					"RestService1_properties_typeProperties_url": {
 						"value": "[parameters('RestService1_properties_typeProperties_url')]"
+					},
+					"RestService2_properties_typeProperties_url": {
+						"value": "[parameters('RestService2_properties_typeProperties_url')]"
 					},
 					"linkedService_asql_aw_properties_typeProperties_server": {
 						"value": "[parameters('linkedService_asql_aw_properties_typeProperties_server')]"

@@ -92,6 +92,9 @@
 		"RestService1_properties_typeProperties_url": {
 			"value": "https://pokeapi.co/api/v2/pokemon/ditto"
 		},
+		"RestService2_properties_typeProperties_url": {
+			"value": "https://reqres.in/api/users"
+		},
 		"SqlServer1_properties_typeProperties_server": {
 			"value": "DESKTOP-KMFLPL4"
 		},
