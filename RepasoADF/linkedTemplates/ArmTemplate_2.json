@@ -13,6 +13,81 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Alter Row Upsert If')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceAlterRowEmpleadoUpsertIf"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabaseRepasoADF",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "alterRow"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ID as short,",
+						"          Nombre as string,",
+						"          Apellido as string,",
+						"          Cargo as string,",
+						"          FechaContratacion as date,",
+						"          FechaCumpleanio as date,",
+						"          Email as string,",
+						"          Telefono as string,",
+						"          ContactoEmergencia as string,",
+						"          ContactoEmergenciaTelefono as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'excel',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Alter Row',",
+						"     fileName: 'EmpleadoNuevo.xlsx',",
+						"     sheetName: 'Data',",
+						"     firstRowAsHeader: true) ~> sourceAlterRowEmpleadoUpsertIf",
+						"sourceAlterRowEmpleadoUpsertIf alterRow(upsertIf(true())) ~> alterRow",
+						"alterRow sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'Empleado',",
+						"     insertable: false,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: true,",
+						"     keys:['ID'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Alter Row')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -2122,53 +2197,6 @@
 						"     partitionBy('hash', 1)) ~> sinkProductoCategoria"
 					]
 				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Aggregate')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flowAggregate",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Aggregate",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceCategoriaProducto": {},
-									"sinkCategriaProducto": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
 			},
 			"dependsOn": []
 		}

@@ -61,6 +61,16 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Self-Hosted-IR')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/ABS_Customer')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -420,6 +430,9 @@
 					"referenceName": "RestService2",
 					"type": "LinkedServiceReference"
 				},
+				"folder": {
+					"name": "Pruebas"
+				},
 				"annotations": [],
 				"type": "RestResource",
 				"typeProperties": {},
@@ -751,7 +764,9 @@
 					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/Self-Hosted-IR')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/SqlServer1')]",
@@ -777,7 +792,9 @@
 					"type": "IntegrationRuntimeReference"
 				}
 			},
-			"dependsOn": []
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/Self-Hosted-IR')]"
+			]
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/Aggregate')]",
@@ -936,81 +953,6 @@
 						"     skipDuplicateMapInputs: true,",
 						"     skipDuplicateMapOutputs: true,",
 						"     errorHandlingOption: 'stopOnFirstError') ~> sinkEmpleadoNuevo"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Alter Row Upsert If')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceAlterRowEmpleadoUpsertIf"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzureSqlDatabaseRepasoADF",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sink1"
-						}
-					],
-					"transformations": [
-						{
-							"name": "alterRow"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ID as short,",
-						"          Nombre as string,",
-						"          Apellido as string,",
-						"          Cargo as string,",
-						"          FechaContratacion as date,",
-						"          FechaCumpleanio as date,",
-						"          Email as string,",
-						"          Telefono as string,",
-						"          ContactoEmergencia as string,",
-						"          ContactoEmergenciaTelefono as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'excel',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Alter Row',",
-						"     fileName: 'EmpleadoNuevo.xlsx',",
-						"     sheetName: 'Data',",
-						"     firstRowAsHeader: true) ~> sourceAlterRowEmpleadoUpsertIf",
-						"sourceAlterRowEmpleadoUpsertIf alterRow(upsertIf(true())) ~> alterRow",
-						"alterRow sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     store: 'sqlserver',",
-						"     schemaName: 'dbo',",
-						"     tableName: 'Empleado',",
-						"     insertable: false,",
-						"     updateable: false,",
-						"     deletable: false,",
-						"     upsertable: true,",
-						"     keys:['ID'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sink1"
 					]
 				}
 			},
