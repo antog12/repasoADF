@@ -4979,7 +4979,7 @@
 			"properties": {
 				"activities": [
 					{
-						"name": "Set variable1",
+						"name": "Set variablepruebaFallos",
 						"type": "SetVariable",
 						"dependsOn": [],
 						"policy": {
