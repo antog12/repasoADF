@@ -13,6 +13,73 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_Switch')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceADSL_KeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Proyectos"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "emp table.csv",
+						"folderPath": "Pruebas/Switch",
+						"fileSystem": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_ADLS_outputcontainer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceADSL_KeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"containername": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Proyectos"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@dataset().containername",
+							"type": "Expression"
+						},
+						"fileSystem": "dataset"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DS_DemoSource')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -543,6 +610,68 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/DelimitedText7')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedServiceADSL_KeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"folderPath": {
+							"value": "@formatDateTime(utcNow(),'dd_MM_yyyy')",
+							"type": "Expression"
+						},
+						"fileSystem": "facturacion"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "Square_Footage",
+						"type": "String"
+					},
+					{
+						"name": "Num_Bedrooms",
+						"type": "String"
+					},
+					{
+						"name": "Num_Bathrooms",
+						"type": "String"
+					},
+					{
+						"name": "Year_Built",
+						"type": "String"
+					},
+					{
+						"name": "Lot_Size",
+						"type": "String"
+					},
+					{
+						"name": "Garage_Size",
+						"type": "String"
+					},
+					{
+						"name": "Neighborhood_Quality",
+						"type": "String"
+					},
+					{
+						"name": "House_Price",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Ds_source_Empty')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -597,162 +726,6 @@
 						"folderPath": "Pruebas/Source",
 						"fileSystem": "dataset"
 					}
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Json_target')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LinkedServiceADSL_KeyVault",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "Pruebas"
-				},
-				"annotations": [],
-				"type": "Json",
-				"typeProperties": {
-					"location": {
-						"type": "AzureBlobFSLocation",
-						"folderPath": "Pruebas/Target",
-						"fileSystem": "dataset"
-					}
-				},
-				"schema": {}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/SQL_sales_pizza_sales')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "LinkedService_sales_sales",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "Proyectos"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [
-					{
-						"name": "order_details_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "order_id",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "pizza_id",
-						"type": "nvarchar"
-					},
-					{
-						"name": "quantity",
-						"type": "tinyint",
-						"precision": 3
-					},
-					{
-						"name": "order_date",
-						"type": "date"
-					},
-					{
-						"name": "order_time",
-						"type": "time",
-						"scale": 7
-					},
-					{
-						"name": "unit_price",
-						"type": "float",
-						"precision": 15
-					},
-					{
-						"name": "total_price",
-						"type": "float",
-						"precision": 15
-					},
-					{
-						"name": "pizza_size",
-						"type": "nvarchar"
-					},
-					{
-						"name": "pizza_category",
-						"type": "nvarchar"
-					},
-					{
-						"name": "pizza_ingredients",
-						"type": "nvarchar"
-					},
-					{
-						"name": "pizza_name",
-						"type": "nvarchar"
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "pizza_sales"
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Sql_OnPremise_dboPruebas')]",
-			"type": "Microsoft.DataFactory/factories/datasets",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"linkedServiceName": {
-					"referenceName": "SqlServer1",
-					"type": "LinkedServiceReference"
-				},
-				"folder": {
-					"name": "Pruebas"
-				},
-				"annotations": [],
-				"type": "SqlServerTable",
-				"schema": [
-					{
-						"name": "codigo",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "nif",
-						"type": "nvarchar"
-					},
-					{
-						"name": "nombre",
-						"type": "nvarchar"
-					},
-					{
-						"name": "apellido1",
-						"type": "nvarchar"
-					},
-					{
-						"name": "apellido2",
-						"type": "nvarchar"
-					},
-					{
-						"name": "codigo_departamento",
-						"type": "int",
-						"precision": 10
-					},
-					{
-						"name": "salario",
-						"type": "int",
-						"precision": 10
-					}
-				],
-				"typeProperties": {
-					"schema": "dbo",
-					"table": "empleado"
 				}
 			},
 			"dependsOn": []

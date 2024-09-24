@@ -305,6 +305,74 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/AzureSqlTable3')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedSevice_ASQL_AWDW2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "SalesOrderID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SalesOrderDetailID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrderQty",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "UnitPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "UnitPriceDiscount",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "LineTotal",
+						"type": "decimal",
+						"precision": 38,
+						"scale": 6
+					},
+					{
+						"name": "rowguid",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": "SalesOrderDetail"
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/AzureSqlTable_orders_final')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
@@ -399,6 +467,74 @@
 					"quoteChar": "\""
 				},
 				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Lookup_NewwarwrMarkSQL_AW')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LinkedSevice_ASQL_AWDW2",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [
+					{
+						"name": "SalesOrderID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "SalesOrderDetailID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "OrderQty",
+						"type": "smallint",
+						"precision": 5
+					},
+					{
+						"name": "ProductID",
+						"type": "int",
+						"precision": 10
+					},
+					{
+						"name": "UnitPrice",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "UnitPriceDiscount",
+						"type": "money",
+						"precision": 19,
+						"scale": 4
+					},
+					{
+						"name": "LineTotal",
+						"type": "decimal",
+						"precision": 38,
+						"scale": 6
+					},
+					{
+						"name": "rowguid",
+						"type": "uniqueidentifier"
+					},
+					{
+						"name": "ModifiedDate",
+						"type": "datetime",
+						"precision": 23,
+						"scale": 3
+					}
+				],
+				"typeProperties": {
+					"schema": "SalesLT",
+					"table": "SalesOrderDetail"
+				}
 			},
 			"dependsOn": []
 		},
@@ -795,168 +931,6 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/integrationRuntimes/Self-Hosted-IR')]"
 			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Aggregate')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_AWDW2",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceCategoriaProducto"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkCategriaProducto"
-						}
-					],
-					"transformations": [
-						{
-							"name": "derivedColumn"
-						},
-						{
-							"name": "select"
-						},
-						{
-							"name": "aggregate"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          Categoria as string,",
-						"          Producto as string,",
-						"          UnitPrice as decimal(19,4),",
-						"          UnitPriceDiscount as decimal(19,4)",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'query',",
-						"     store: 'sqlserver',",
-						"     query: 'SELECT PC.Name Categoria, P.Name Producto, OD.UnitPrice, OD.UnitPriceDiscount\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
-						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceCategoriaProducto",
-						"sourceCategoriaProducto derive(CATEGORIA = upper(Categoria),",
-						"          Producto = upper(Producto),",
-						"          {Monto Total} = toDecimal(UnitPrice-UnitPriceDiscount)) ~> derivedColumn",
-						"derivedColumn select(mapColumn(",
-						"          PRODUCTO = Producto,",
-						"          CATEGORIA = derivedColumn@CATEGORIA,",
-						"          {MONTO TOTAL} = {Monto Total}",
-						"     ),",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true) ~> select",
-						"select aggregate(groupBy(PRODUCTO,",
-						"          CATEGORIA),",
-						"     SUMA = sum({MONTO TOTAL}),",
-						"          MAX = max({MONTO TOTAL}),",
-						"          MIN = min({MONTO TOTAL}),",
-						"          AVG = toDecimal(avg({MONTO TOTAL})),",
-						"          CONTEO = count({MONTO TOTAL})) ~> aggregate",
-						"aggregate sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'delimited',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Aggregate',",
-						"     columnDelimiter: ',',",
-						"     escapeChar: '\\\\',",
-						"     quoteChar: '\\\"',",
-						"     columnNamesAsHeader: true,",
-						"     partitionFileNames:['CategoriaProductoAggregate.csv'],",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     partitionBy('hash', 1)) ~> sinkCategriaProducto"
-					]
-				}
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Alter Row Insert')]",
-			"type": "Microsoft.DataFactory/factories/dataflows",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"folder": {
-					"name": "Data Flow"
-				},
-				"type": "MappingDataFlow",
-				"typeProperties": {
-					"sources": [
-						{
-							"linkedService": {
-								"referenceName": "LinkedService_BlobStorage",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sourceEmpleadoNuevo"
-						}
-					],
-					"sinks": [
-						{
-							"linkedService": {
-								"referenceName": "AzureSqlDatabaseRepasoADF",
-								"type": "LinkedServiceReference"
-							},
-							"name": "sinkEmpleadoNuevo"
-						}
-					],
-					"transformations": [
-						{
-							"name": "alterRowNuevo"
-						}
-					],
-					"scriptLines": [
-						"source(output(",
-						"          ID as short,",
-						"          Nombre as string,",
-						"          Apellido as string,",
-						"          Cargo as string,",
-						"          FechaContratacion as date,",
-						"          FechaCumpleanio as date,",
-						"          Email as string,",
-						"          Telefono as string,",
-						"          ContactoEmergencia as string,",
-						"          ContactoEmergenciaTelefono as string",
-						"     ),",
-						"     allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     ignoreNoFilesFound: false,",
-						"     format: 'excel',",
-						"     container: 'dataflowdataset',",
-						"     folderPath: 'Alter Row',",
-						"     fileName: 'EmpleadoNuevo.xlsx',",
-						"     sheetName: 'Data',",
-						"     firstRowAsHeader: true) ~> sourceEmpleadoNuevo",
-						"sourceEmpleadoNuevo alterRow(insertIf(year(FechaContratacion)==2007),",
-						"     deleteIf(true())) ~> alterRowNuevo",
-						"alterRowNuevo sink(allowSchemaDrift: true,",
-						"     validateSchema: false,",
-						"     format: 'table',",
-						"     store: 'sqlserver',",
-						"     schemaName: 'dbo',",
-						"     tableName: 'Empleado',",
-						"     insertable: true,",
-						"     updateable: false,",
-						"     deletable: false,",
-						"     upsertable: false,",
-						"     skipDuplicateMapInputs: true,",
-						"     skipDuplicateMapOutputs: true,",
-						"     errorHandlingOption: 'stopOnFirstError') ~> sinkEmpleadoNuevo"
-					]
-				}
-			},
-			"dependsOn": []
 		}
 	]
 }
