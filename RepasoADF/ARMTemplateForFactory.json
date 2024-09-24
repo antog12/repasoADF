@@ -1048,7 +1048,7 @@
 							"source": {
 								"type": "AzureSqlSource",
 								"sqlReaderQuery": {
-									"value": "select * from saleslt.salesorderdetail where ModifiedDate >\n@{activity('Lookup_OldWaterMark').output.firstRow.watermark}\nand ModifiedDate <= @{activity('Lookup_OldWaterMark').output.firstRow.NewWatermark}\n",
+									"value": "select * from saleslt.salesorderdetail where ModifiedDate >\n'@{activity('Lookup_OldWaterMark').output.firstRow.watermark}'\nand ModifiedDate <= '@{activity('Lookup_NewWaterMark').output.firstRow.newwatermark}'\n\n\n\n",
 									"type": "Expression"
 								},
 								"queryTimeout": "02:00:00",
