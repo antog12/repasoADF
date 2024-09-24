@@ -1,0 +1,59 @@
+{
+	"name": "DelimitedText7",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedServiceADSL_KeyVault",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"folderPath": {
+					"value": "@formatDateTime(utcNow(),'dd_MM_yyyy')",
+					"type": "Expression"
+				},
+				"fileSystem": "facturacion"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": [
+			{
+				"name": "Square_Footage",
+				"type": "String"
+			},
+			{
+				"name": "Num_Bedrooms",
+				"type": "String"
+			},
+			{
+				"name": "Num_Bathrooms",
+				"type": "String"
+			},
+			{
+				"name": "Year_Built",
+				"type": "String"
+			},
+			{
+				"name": "Lot_Size",
+				"type": "String"
+			},
+			{
+				"name": "Garage_Size",
+				"type": "String"
+			},
+			{
+				"name": "Neighborhood_Quality",
+				"type": "String"
+			},
+			{
+				"name": "House_Price",
+				"type": "String"
+			}
+		]
+	}
+}

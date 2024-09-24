@@ -1,0 +1,21 @@
+{
+	"name": "lookupOldwatermarkSQL",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LinkedSeevice_DB_repaso_ADF_KV",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [
+			{
+				"name": "watermark",
+				"type": "date"
+			}
+		],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "oldwatermark"
+		}
+	}
+}
