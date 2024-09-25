@@ -13,6 +13,244 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/Sort')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceEmpleado"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureSqlDatabaseRepasoADF",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkEmpleado"
+						}
+					],
+					"transformations": [
+						{
+							"name": "parseNombre",
+							"description": "Vamos a trabajar con la columna de nombre"
+						},
+						{
+							"name": "parseJson"
+						},
+						{
+							"name": "parseXML"
+						},
+						{
+							"name": "select"
+						},
+						{
+							"name": "filter"
+						},
+						{
+							"name": "sort"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          ID as short,",
+						"          Nombre as string,",
+						"          JsonValue as string,",
+						"          XmlValue as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'excel',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'Parse',",
+						"     fileName: 'Empleado.xlsx',",
+						"     sheetName: 'Data',",
+						"     firstRowAsHeader: true) ~> sourceEmpleado",
+						"sourceEmpleado parse(NombreOutPut = Nombre ? (Nombre as string,",
+						"          Apellido as string),",
+						"     format: 'delimited',",
+						"     columnNamesAsHeader: false,",
+						"     columnDelimiter: '|',",
+						"     nullValue: '') ~> parseNombre",
+						"parseNombre parse(JsonOutPut = JsonValue ? (Cargo as string,",
+						"          FechaContratacion as date,",
+						"          FechaCumpleanio as date),",
+						"     format: 'json',",
+						"     documentForm: 'singleDocument') ~> parseJson",
+						"parseJson parse(XmlOutPut = XmlValue ? (Empleado as (Email as string,",
+						"          Telefono as string,",
+						"          ContactoEmergencia as string,",
+						"          ContactoEmergenciaTelefono as string)),",
+						"     format: 'xml',",
+						"     namespaces: true) ~> parseXML",
+						"parseXML select(mapColumn(",
+						"          ID,",
+						"          Nombre = NombreOutPut.Nombre,",
+						"          Apellido = NombreOutPut.Apellido,",
+						"          Cargo = JsonOutPut.Cargo,",
+						"          FechaContratacion = JsonOutPut.FechaContratacion,",
+						"          FechaCumpleanio = JsonOutPut.FechaCumpleanio,",
+						"          Email = XmlOutPut.Empleado.Email,",
+						"          Telefono = XmlOutPut.Empleado.Telefono,",
+						"          ContactoEmergencia = XmlOutPut.Empleado.ContactoEmergencia,",
+						"          ContactoEmergenciaTelefono = XmlOutPut.Empleado.ContactoEmergenciaTelefono",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select",
+						"select filter(year(FechaContratacion)>2007) ~> filter",
+						"filter sort(asc(ID, true)) ~> sort",
+						"sort sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'Empleado',",
+						"     preSQLs:['truncate table dbo.empleado'],",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          ID,",
+						"          Nombre,",
+						"          Apellido,",
+						"          Cargo,",
+						"          FechaContratacion,",
+						"          FechaCumpleanio,",
+						"          Email,",
+						"          Telefono,",
+						"          ContactoEmergencia,",
+						"          ContactoEmergenciaTelefono",
+						"     )) ~> sinkEmpleado"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Surrogate Key')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Data Flow"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_AWDW2",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceCategoriaProducto"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LinkedService_BlobStorage",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkCategoriaSurrogateKey"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn"
+						},
+						{
+							"name": "select"
+						},
+						{
+							"name": "aggregate"
+						},
+						{
+							"name": "surrogateKey",
+							"description": "Agregue una nueva clave ID comenzando por 1 con el paso 1.\nCreamos una nueva columna llamada ID."
+						},
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Categoria as string,",
+						"          Producto as string,",
+						"          UnitPrice as decimal(19,4),",
+						"          UnitPriceDiscount as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'SELECT PC.Name Categoria, P.Name Producto, OD.UnitPrice, OD.UnitPriceDiscount\\nFROM [SalesLT].[ProductCategory] AS PC\\n     INNER JOIN [SalesLT].[Product] AS P ON P.ProductCategoryID=PC.ProductCategoryID\\n     INNER JOIN [SalesLT].[SalesOrderDetail] AS OD ON OD.ProductID=P.ProductID',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> sourceCategoriaProducto",
+						"sourceCategoriaProducto derive(CATEGORIA = upper(Categoria),",
+						"          Producto = upper(Producto),",
+						"          {Monto Total} = toDecimal(UnitPrice-UnitPriceDiscount)) ~> derivedColumn",
+						"derivedColumn select(mapColumn(",
+						"          PRODUCTO = Producto,",
+						"          CATEGORIA = derivedColumn@CATEGORIA,",
+						"          {MONTO TOTAL} = {Monto Total}",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select",
+						"select aggregate(groupBy(PRODUCTO,",
+						"          CATEGORIA),",
+						"     SUMA = sum({MONTO TOTAL}),",
+						"          MAX = max({MONTO TOTAL}),",
+						"          MIN = min({MONTO TOTAL}),",
+						"          AVG = toDecimal(avg({MONTO TOTAL})),",
+						"          CONTEO = count({MONTO TOTAL})) ~> aggregate",
+						"aggregate keyGenerate(output(ID as long),",
+						"     startAt: 1L,",
+						"     stepValue: 1L) ~> surrogateKey",
+						"surrogateKey select(mapColumn(",
+						"          ID,",
+						"          PRODUCTO,",
+						"          CATEGORIA,",
+						"          SUMA,",
+						"          MAX,",
+						"          MIN,",
+						"          AVG,",
+						"          CONTEO",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'dataflowdataset',",
+						"     folderPath: 'SurrogateKey',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['CategoriaProductoAggregate.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkCategoriaSurrogateKey"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/Union')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -1145,90 +1383,6 @@
 				},
 				"folder": {
 					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Sort')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flowSort",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "Sort",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"sourceEmpleado": {},
-									"sinkEmpleado": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "DataFlow"
-				},
-				"annotations": []
-			},
-			"dependsOn": []
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/Store Procedure')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Stored procedure",
-						"type": "SqlServerStoredProcedure",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"storedProcedureName": "[[dbo].[SP_REP_EMP_CARGO]"
-						},
-						"linkedServiceName": {
-							"referenceName": "LinkedSeevice_DB_repaso_ADF_KV",
-							"type": "LinkedServiceReference"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"folder": {
-					"name": "General activities"
 				},
 				"annotations": []
 			},
