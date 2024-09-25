@@ -47,6 +47,10 @@
 			"type": "secureString",
 			"metadata": "Cadena protegida para \"password\"de \"linkedService_asql_aw\""
 		},
+		"softwizSourceSQL_password": {
+			"type": "secureString",
+			"metadata": "Cadena protegida para \"password\"de \"softwizSourceSQL\""
+		},
 		"ASQLprueba_properties_typeProperties_server": {
 			"type": "string",
 			"defaultValue": "antog12server.database.windows.net"
@@ -148,6 +152,18 @@
 			"defaultValue": "@{linkedService().DataBaseName}"
 		},
 		"linkedService_asql_aw_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "antog12"
+		},
+		"softwizSourceSQL_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "antog12server.database.windows.net"
+		},
+		"softwizSourceSQL_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DB-repaso-ADF"
+		},
+		"softwizSourceSQL_properties_typeProperties_userName": {
 			"type": "string",
 			"defaultValue": "antog12"
 		}
@@ -12092,6 +12108,28 @@
 				"[concat(variables('factoryId'), '/datasets/asql_DB_repaso_adf')]",
 				"[concat(variables('factoryId'), '/datasets/origenconParam')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/softwizSourceSQL')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('softwizSourceSQL_properties_typeProperties_server')]",
+					"database": "[parameters('softwizSourceSQL_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('softwizSourceSQL_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('softwizSourceSQL_password')]"
+					}
+				}
+			},
+			"dependsOn": []
 		}
 	]
 }

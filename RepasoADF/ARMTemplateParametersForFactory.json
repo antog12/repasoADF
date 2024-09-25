@@ -35,6 +35,9 @@
 		"linkedService_asql_aw_password": {
 			"value": ""
 		},
+		"softwizSourceSQL_password": {
+			"value": ""
+		},
 		"ASQLprueba_properties_typeProperties_server": {
 			"value": "antog12server.database.windows.net"
 		},
@@ -111,6 +114,15 @@
 			"value": "@{linkedService().DataBaseName}"
 		},
 		"linkedService_asql_aw_properties_typeProperties_userName": {
+			"value": "antog12"
+		},
+		"softwizSourceSQL_properties_typeProperties_server": {
+			"value": "antog12server.database.windows.net"
+		},
+		"softwizSourceSQL_properties_typeProperties_database": {
+			"value": "DB-repaso-ADF"
+		},
+		"softwizSourceSQL_properties_typeProperties_userName": {
 			"value": "antog12"
 		}
 	}
